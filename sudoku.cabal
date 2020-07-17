@@ -27,13 +27,13 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Lib,GameField,Solver,GameState
   other-modules:
       Paths_sudoku
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      base >=4.7 && <5, lens
   default-language: Haskell2010
 
 executable sudoku-exe

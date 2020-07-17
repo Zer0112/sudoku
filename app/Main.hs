@@ -1,7 +1,12 @@
 module Main where
 
-import Lib
+import           Lib
+import           GameField
 
 main :: IO ()
-main = printWelcome
+main = do
+    printWelcome
+    print myGame
+  where
+    myGame = Sudoku [SudokuField One One [One], SudokuField Two One [One]]
 

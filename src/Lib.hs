@@ -2,9 +2,9 @@ module Lib
     ( printWelcome
     )
 where
+import           GameField
 
-
-
+-- | Phrases the cl input
 inputPhraser :: [Char] -> [Char]
 inputPhraser arg | arg == "1" = "option 1"
                  | arg == "2" = "option 2"
@@ -12,7 +12,7 @@ inputPhraser arg | arg == "1" = "option 1"
                  | otherwise  = "exit"
 
 
-
+-- | Prints welcome message in the command line
 printWelcome :: IO ()
 printWelcome = do
     print "Welcome to sudoku the game"

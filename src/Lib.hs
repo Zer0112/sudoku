@@ -23,3 +23,11 @@ printWelcome = do
     arg <- getLine
     print $ inputPhraser arg
 
+printGameM :: IO ()
+printGameM = do
+    print "enter col row entry to make a game move"
+    print "enter q to leave"
+    arg <- getLine
+    print $ (inputPhraser arg)
+
+

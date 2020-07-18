@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib,GameField,Solver,GameState
+      Lib,GameField,Solver,GameState,Utility
   other-modules:
       Paths_sudoku
   hs-source-dirs:

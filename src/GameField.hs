@@ -12,15 +12,15 @@ import           Control.Lens
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
 instance Show Digit where
     show EmptyField = "-"
-    show One        = show (1)
-    show Two        = show (2)
-    show Three      = show (3)
-    show Four       = show (4)
-    show Five       = show (5)
-    show Six        = show (6)
-    show Seven      = show (7)
-    show Eight      = show (8)
-    show Nine       = show (9)
+    show One        = show 1
+    show Two        = show 2
+    show Three      = show 3
+    show Four       = show 4
+    show Five       = show 5
+    show Six        = show 6
+    show Seven      = show 7
+    show Eight      = show 8
+    show Nine       = show 9
 
 
 -- | returns for how many numbers the sudoku is made - 9 for normal sudoku
@@ -38,7 +38,7 @@ instance Show Sudoku where
 data SudokuField = SudokuField {_col::Digit,
                                         _row::Digit,
                                         _entry::[Digit]}
-makeLenses (''SudokuField)
+makeLenses ''SudokuField
 
 instance Show SudokuField where
     show field@(SudokuField _col _row _entry) =

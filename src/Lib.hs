@@ -30,4 +30,4 @@ printGameM = do
     arg <- getLine
     print $ (inputPhraser arg)
 
-
+ 

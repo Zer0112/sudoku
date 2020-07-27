@@ -24,15 +24,19 @@ instance Show Digit where
 
 
 -- | returns for how many numbers the sudoku is made - 9 for normal sudoku
--- intended for easier extention to more numbers
+-- intended for easier extention to more numbers if i want to play around with it later
+-- >>> nrOfElem
+-- 9
 nrOfElem :: Int
 nrOfElem = fromEnum (maxBound :: Digit)
 
+-- | nr of boxes in one row/col
+nrBox :: Int
+nrBox = 3
 
 -- | data type to represent the sudoku game as whole
-newtype Sudoku =Sudoku [SudokuField]
-instance Show Sudoku where
-    show (Sudoku lst) = show lst
+type Sudoku = [SudokuField]
+
 
 -- | data type to represent the sudoku game
 data SudokuField = SudokuField {_col::Digit,
@@ -45,20 +49,50 @@ instance Show SudokuField where
         show (field ^. col) ++ " " ++ show (field ^. row) ++ "  " ++ show
             (field ^. entry)
 
--- | gives the list of sudokufield with row == dig back
-rowSudokuField :: Digit -> Sudoku -> [SudokuField]
-rowSudokuField dig (Sudoku lst) = [ s | s <- lst, s ^. row == dig ]
 
--- | gives the list of sudokufield with col == dig back
-colSudokuField :: Digit -> Sudoku -> [SudokuField]
-colSudokuField dig (Sudoku lst) = [ s | s <- lst, s ^. col == dig ]
+-- | gives True if both entries are in the same row
+-- >>> rowFilter (SudokuField One One [One]) (SudokuField One One [One])
+-- True
 
--- | gives the list of sudokufield with box == dig back
-boxSudokuField :: Digit -> Sudoku -> [SudokuField]
-boxSudokuField dig (Sudoku lst) =
-    [ s | s <- lst, s ^. col == dig, s ^. row == dig, fromEnum dig == 2 ]
--- todo write the actual box function
+rowFilter :: SudokuField -> SudokuField -> Bool
+rowFilter sudField1 sudField2 = sudField1 ^. row == sudField2 ^. row
 
+-- | give True if both entries are in the same col
+colFilter :: SudokuField -> SudokuField -> Bool
+colFilter sudF1 sudF2 = sudF1 ^. col == sudF2 ^. col
 
+-- | gives True if both entries are in the same box
+boxFilter :: SudokuField -> SudokuField -> Bool
+boxFilter sudF1 sudF2 =
+    fromEnum (sudF1 ^. col)
+        `div` nrBox
+        ==    fromEnum (sudF2 ^. col)
+        `div` nrBox
+        &&    fromEnum (sudF1 ^. row)
+        `div` nrBox
+        ==    fromEnum (sudF2 ^. row)
+        `div` nrBox
 
+-- | filter sudokufield to be in same row and col and box but not the same
+allFilter :: SudokuField -> SudokuField -> Bool
+allFilter =
+    (\sud x -> ((boxFilter sud x) || (colFilter sud x) || boxFilter sud x)
+        && not ((sud ^. col == x ^. col) && (sud ^. col == x ^. col))
+    )
 
+-- | basic condition for a valid entry check
+validOne :: SudokuField -> SudokuField -> Bool
+validOne f1 f2 = f1 ^. entry /= f2 ^. entry
+
+-- | List of all to check entries for one entry
+listOfTestValid :: SudokuField -> [SudokuField] -> [SudokuField]
+listOfTestValid field sudo = filter (allFilter field) sudo
+
+-- | checks if entry is valid
+validEntry :: SudokuField -> [SudokuField] -> Bool
+validEntry field sudoku = and filterEntry
+    where filterEntry = (map (\x -> (validOne field x)) sudoku)
+
+-- | checks the whole sudoku
+validAll :: Sudoku -> Bool
+validAll sudoku = and $ map (\x -> validEntry x sudoku) sudoku

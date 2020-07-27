@@ -2,11 +2,10 @@ module Main where
 
 import           Lib
 import           GameField
+import           Utility
 
 main :: IO ()
 main = do
     printWelcome
     print myGame
-  where
-    myGame = Sudoku [SudokuField One One [One], SudokuField Two One [One]]
-
+    where myGame = initField

@@ -29,7 +29,6 @@ instance Show Digit where
 -- 9
 nrOfElem :: Int
 nrOfElem = fromEnum (maxBound :: Digit)
-
 -- | nr of boxes in one row/col
 nrBox :: Int
 nrBox = 3
@@ -45,7 +44,7 @@ data SudokuField = SudokuField {_col::Digit,
 makeLenses ''SudokuField
 
 instance Show SudokuField where
-    show field@(SudokuField _col _row _entry) =
+    show field =
         show (field ^. col) ++ " " ++ show (field ^. row) ++ "  " ++ show
             (field ^. entry)
 

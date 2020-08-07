@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 2.0
 
 -- This file has been generated from package.yaml by hpack version 0.33.0.
 --
@@ -33,7 +33,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5, lens, threepenny-gui, regex-posix < 0.96.0.0
+      base >=4.7 && <5, lens, threepenny-gui, regex-posix < 0.96.0.0, safe
 
   default-language: Haskell2010
 

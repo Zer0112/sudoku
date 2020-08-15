@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: paths-0.2.0.0@sha256:ce5a5e119750558a5f7b5e3c9df064542ff659bfadf9522928494a4231760596,2638
+    hackage: HsYAML-aeson-0.2.0.0@sha256:b58e8587d480f8c29e4cb4f61ad6ab5d74195d31340e6e8c317ac4d13b65c469,1861
     pantry-tree:
-      size: 732
-      sha256: 49da961ed224458ebbed7cbc2d59155642b16d9bfd82cea5392ce9068725ed9e
+      size: 234
+      sha256: 8a181cdb027e2862fd54cb47d0ff91a45126ab4cd2080083128e800c5fa2635b
   original:
-    hackage: paths-0.2.0.0@sha256:ce5a5e119750558a5f7b5e3c9df064542ff659bfadf9522928494a4231760596,2638
+    hackage: HsYAML-aeson-0.2.0.0@sha256:b58e8587d480f8c29e4cb4f61ad6ab5d74195d31340e6e8c317ac4d13b65c469,1861
 snapshots:
 - completed:
     size: 524996

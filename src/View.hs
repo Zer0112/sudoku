@@ -1,5 +1,6 @@
 module View
-    ()
+    ( startView
+    )
 where
 import           Control.Monad
 import           Data.Functor
@@ -10,9 +11,11 @@ import           Graphics.UI.Threepenny.Core
 import           Safe                           ( readMay )
 import           Text.Printf
 
-
+startView = main
 -- start a Threepenny server that listens on port 8023 (this is the default)
-main = startGUI (defaultConfig { jsPort = Just 8023 }) setup3
+main = startGUI
+    (defaultConfig { jsPort = Just 8023, jsStatic = Just "static" })
+    setup3
 
 -- build a user interface whenver a browser connects to the server
 setup :: Window -> UI ()
@@ -73,11 +76,15 @@ setup3 window = do
             style
             [("border", "solid black 1px"), ("background", "#eee")]
 
-    drawRects <- UI.button #+ [string "Add some rectangles."]
-    drawText  <- UI.button #+ [string "Add text."]
-    drawImage <- UI.button #+ [string "Add image."]
-    drawPie   <- UI.button #+ [string "Must have pie!"]
-    clear     <- UI.button #+ [string "Clear the canvas."]
+    drawRects <- UI.button #+ [string "Add some rectangles."] # set
+        (attr "type")
+        "button"
+    drawText  <- UI.button #+ [string "Add text."] # set (attr "type") "button"
+    drawImage <- UI.button #+ [string "Add image."] # set (attr "type") "button"
+    drawPie   <- UI.button #+ [string "Must have pie!"] # set (attr "type")
+                                                              "button"
+    clear <- UI.button #+ [string "Clear the canvas."] # set (attr "type")
+                                                             "button"
 
     getBody window
         #+ [ column [element canvas]

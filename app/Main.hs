@@ -1,11 +1,12 @@
 module Main where
 
-import           Lib
 import           GameField
+import           Lib
 import           Utility
+import           View
 
 main :: IO ()
 main = do
-    printWelcome
+    startView
     print myGame
     where myGame = initField

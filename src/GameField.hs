@@ -4,6 +4,8 @@ module GameField
     ( Digit(..)
     , SudokuField(..)
     , Sudoku(..)
+    ,validAll,
+    entry
     )
 where
 import           Control.Lens
@@ -11,7 +13,7 @@ import           Control.Lens
 -- |type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
 instance Show Digit where
-    show EmptyField = "-"
+    show EmptyField = show 0
     show One        = show 1
     show Two        = show 2
     show Three      = show 3
@@ -38,8 +40,8 @@ type Sudoku = [SudokuField]
 
 
 -- | data type to represent the sudoku game
-data SudokuField = SudokuField {_col::Digit,
-                                        _row::Digit,
+data SudokuField = SudokuField {_col::Int,
+                                        _row::Int,
                                         _entry::[Digit]}
 makeLenses ''SudokuField
 

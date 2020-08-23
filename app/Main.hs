@@ -7,6 +7,8 @@ import           View
 
 main :: IO ()
 main = do
+    -- exportSudoku "test2.txt"
+    -- readInSudoku "sudoku17.txt"
     startView
-    print myGame
-    where myGame = initField
+    -- print myGame
+    -- where myGame = initField

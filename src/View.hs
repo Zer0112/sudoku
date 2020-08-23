@@ -5,35 +5,39 @@ where
 import           Control.Monad
 import           Data.Functor
 import           Data.IORef
-import qualified Graphics.UI.Threepenny        as UI
+import           GHC.IO.Handle.Types         (Handle)
+import qualified Graphics.UI.Threepenny      as UI
 import           Graphics.UI.Threepenny.Core
-
-import           Safe                           ( readMay )
+import           Safe                        (readMay)
+import           System.Info                 (os)
+import           System.Process              (ProcessHandle, createProcess,
+                                              shell)
 import           Text.Printf
-
 startView = main
 -- start a Threepenny server that listens on port 8023 (this is the default)
 main = startGUI
     (defaultConfig { jsPort = Just 8023, jsStatic = Just "static" })
-    setup3
+    setup4
 
 -- build a user interface whenver a browser connects to the server
 setup :: Window -> UI ()
 setup window = do
 
-    -- set window title
+    -- set window titl
     return window # set UI.title "Sudoku"
 
     -- create a button element
-    button  <- UI.button # set UI.text "Click me1!"
+    button  <- UI.button #set UI.style [("color","green"),("background","black")] # set UI.text "Click me1!"
     button2 <- UI.button # set UI.text "Click me23456!"
     -- attach button to the HTML body, so that it is displayed
     getBody window #+ [element button]
     getBody window #+ [element button2]
 
     -- register an event handler for clicking the button
-    on UI.click button $ \_ -> do
-        element button # set UI.text "I have been clicked!"
+    on UI.hover button $ \_ -> do
+        element button # set UI.style [("color","red"),("background","blue")]
+    on UI.leave button $ \_ -> do
+        element button # set UI.style [("color","green"),("background","black")]
 
 setup2 :: Window -> UI ()
 setup2 window = void $ do
@@ -63,109 +67,36 @@ setup2 window = void $ do
     element euro # sink value euroOut
     element dollar # sink value dollarOut
 
-canvasSize = 400
-
-setup3 :: Window -> UI ()
-setup3 window = do
-    return window # set title "Canvas - Examples"
-
-    UI.addStyleSheet window "semantic.css"
-
-    canvas <-
-        UI.canvas # set UI.height canvasSize # set UI.width canvasSize # set
-            style
-            [("border", "solid black 1px"), ("background", "#eee")]
-
-    drawRects <- UI.button #+ [string "Add some rectangles."] # set
-        (attr "type")
-        "button"
-    drawText  <- UI.button #+ [string "Add text."] # set (attr "type") "button"
-    drawImage <- UI.button #+ [string "Add image."] # set (attr "type") "button"
-    drawPie   <- UI.button #+ [string "Must have pie!"] # set (attr "type")
-                                                              "button"
-    clear <- UI.button #+ [string "Clear the canvas."] # set (attr "type")
-                                                             "button"
-
-    getBody window
-        #+ [ column [element canvas]
-           , element drawRects
-           , element drawText
-           , element drawImage
-           , element drawPie
-           , element clear
-           ]
-
-    on UI.click clear $ const $ canvas # UI.clearCanvas
-
-    -- draw a pie chart
-    on UI.click drawPie $ const $ do
-        let center =
-                ( fromIntegral canvasSize / 2
-                , fromIntegral (canvasSize + 30) / 2
-                )
-            radius = 100
-
-            drawSlice start end color = do
-                canvas # set' UI.fillStyle (UI.htmlColor color)
-                canvas # set' UI.strokeStyle "white"
-                canvas # UI.beginPath
-                canvas # UI.arc center radius start end
-                canvas # UI.lineTo center
-                canvas # UI.closePath
-                canvas # UI.fill
-                canvas # UI.stroke
-
-            radian angle = angle * pi / 180
-
-            normalizeAngles xs = map (\(x, y) -> (360 * x / total, y)) xs
-                where total = sum $ map fst xs
-
-            pieData = normalizeAngles
-                [ (100, "#1f77b4")
-                , (45 , "#ff7f0e")
-                , (80 , "#2ca02c")
-                , (10 , "#d62728")
-                , (105, "#9467bd")
-                , (20 , "#8c564b")
-                ]
-
-        UI.timestamp -- measure drawing performance for fun
-        foldM
-            (\start (delta, col) -> do
-                let end = start + delta
-                drawSlice (radian start) (radian end) col
-                return end
-            )
-            0
-            pieData
-        UI.timestamp
 
 
-    -- draw some rectangles
-    on UI.click drawRects $ const $ do
-        let rects =
-                [ (20 , 130, 15, 120, "teal")
-                , (345, 110, 15, 90 , "lightblue")
-                , (220, 360, 95, 15 , "teal")
-                ]
+-- | launch application in default web browser
+-- up :: IO ()
+-- up = do
+--   let port = 8023
+--   launchAppInBrowser port
+--   start port
 
-        forM_ rects $ \(x, y, w, h, color) -> do
-            canvas # set' UI.fillStyle (UI.htmlColor color)
-            canvas # UI.fillRect (x, y) w h
+-- | convenience function that opens the 3penny UI in the default web browser
+launchAppInBrowser:: Int -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
+launchAppInBrowser port = case os of
+  "mingw32" -> createProcess  (shell $ "start "    ++ url)
+  "darwin"  -> createProcess  (shell $ "open "     ++ url)
+  _         -> createProcess  (shell $ "xdg-open " ++ url)
+  where url = "http://localhost:" ++ show port
 
-    -- draw some text
-    on UI.click drawText $ const $ do
-        return canvas
-            # set UI.textFont    "30px sans-serif"
-            # set UI.strokeStyle "gray"
-            # set UI.fillStyle   (UI.htmlColor "black")
-
-        canvas # UI.strokeText "is awesome" (141, 61)
-        canvas # UI.fillText "is awesome" (140, 60)
-
-    -- draw the haskell logo
-    url <- UI.loadFile "image/png" "static/haskell-logo.png"
-    img <- UI.img # set UI.src url
-
-    on UI.click drawImage $ const $ do
-        canvas # UI.drawImage img (60, 20)
+setup4 w =void $ do
+    buttons <- replicateM 81 UI.button
+    let labeledbuttons = zip buttons [show x | x<- [1..81]]
+    sequence_ [element b # set UI.text t # set UI.style [("color","green"),("background","black")] | (b,t) <- labeledbuttons]
+    -- sequence_ [on UI.hover b    (\_ -> callback b t) | (b,t) <- labeledbuttons]
+    getBody w #+ [UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan 9) #+ []]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 9 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 18 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 27 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 36 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 45 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 54 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 63 buttons]]
+        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 72 buttons]])
+        ]

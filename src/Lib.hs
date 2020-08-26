@@ -4,6 +4,8 @@ module Lib
 where
 import           GameField
 
+
+--todo delete redundant
 -- | Phrases the cl input
 inputPhraser :: [Char] -> [Char]
 inputPhraser arg | arg == "1" = "option 1"
@@ -30,4 +32,4 @@ printGameM = do
     arg <- getLine
     print $ (inputPhraser arg)
 
- 
+

@@ -1,45 +1,63 @@
 module Utility
     ( initField,
     readInSudoku,
-    exportSudoku
+    exportSudoku,
+    fieldToChar2,
+    initSudokuField2,
+    changeDigit,
     )
 where
 import           Control.Lens
 import           GameField
 import           System.IO
 
-
+-- |creates a dummy field for testing
 initField :: [SudokuField]
 initField =
-    [ SudokuField x y [EmptyField]
+    [ SudokuField x y [Two]
     | x <- [1..maxBound]
     , y <- [1..maxBound]
     ]
 
+initSudokuField2 :: [SudokuField]
+initSudokuField2 = createSudokuField [enumFrom One | x<-[1..9]]
 
+
+test =print $ stringToSudoku ['1', '2', '3', '4', '5']
+test2 =print $ sudokuToString initSudokuField2
+-- >>> test2
+createSudokuField :: [[Digit]] -> [SudokuField]
+createSudokuField digList = concat [rowCreate nrRow dlist|(nrRow,dlist) <-zip [1..] digList]
+
+rowCreate :: Int-> [Digit] -> [SudokuField]
+rowCreate nrRow digList =concat[[SudokuField i nrRow [d]] | (d,i)<- zip digList [1..]]
+
+-- | reads in a Sudoku from a file
+-- the sudoku has to be in line and empty field is 0
+readInSudoku :: FilePath -> IO [SudokuField]
 readInSudoku pathToFile = do
     withFile pathToFile ReadMode (\h ->do
         content <-hGetLine h
         print$ stringToSudoku content
+        return initSudokuField2
         --todo create sudoku from file
         )
 
-
+-- | exports a sudoku in inline style with 0 as empty
 exportSudoku :: FilePath -> Sudoku -> IO ()
 exportSudoku name sudoku = do
     writeFile name (sudokuToString sudoku)
-    -- todo creat sudoku to file
 
-stringToSudoku :: [Char]->Sudoku
-stringToSudoku lst@(x:xs)= undefined
+-- | creates a sudoku from a string
+stringToSudoku :: [Char]->Maybe Sudoku
+stringToSudoku lst@(x:xs)=undefined
+    where t= fmap charToSud lst
 
+-- | creates a string from a sudoku
 sudokuToString :: Sudoku -> [Char]
-sudokuToString lst@(x:xs)=show x ++ sudokuToString xs
-    where
-        lst sudoku =concat [x^.entry | x<-sudoku]
+sudokuToString lst=concat $ fmap fieldToChar (lst)
 
--- todo factor out just and rework
-
+-- | mapping from chr to sudoku entry
 charToSud :: Char -> Maybe Digit
 charToSud ch
     | ch=='0' =Just EmptyField
@@ -53,3 +71,34 @@ charToSud ch
     | ch=='8' =Just Eight
     | ch=='9' =Just Nine
     | otherwise = Nothing
+-- todo maybe rewrite it with the use of enum
+
+--todo in general deal with incorrect sudoku formats
+-- | creates a String from a Sudokufield with empty = 0
+fieldToChar :: SudokuField -> [Char]
+fieldToChar field = concat $ map digitToChar (field^.entry)
+    where
+    digitToChar :: Digit -> [Char]
+    digitToChar dig
+        | dig==EmptyField ="0"
+        | otherwise =show dig
+
+-- |creates a String from a Sudokufield with empty = " "
+fieldToChar2 :: SudokuField -> [Char]
+fieldToChar2 field = concat $ map digitToChar (field^.entry)
+    where
+    digitToChar :: Digit -> [Char]
+    digitToChar dig
+        | dig==EmptyField =" "
+        | otherwise =show dig
+
+changeDigit :: SudokuField->SudokuField
+changeDigit (SudokuField row col ent) =SudokuField row col (incDig ent)
+    where
+        incDig lst=map succ1 lst
+        succ1 dig
+                | dig==(maxBound :: Digit) = EmptyField
+                |otherwise =succ dig
+
+
+

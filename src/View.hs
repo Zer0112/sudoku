@@ -2,9 +2,9 @@ module View
     ( startView
     )
 where
+
 import           Control.Monad
-import           Data.Functor
-import           Data.IORef
+import           GameField
 import           GHC.IO.Handle.Types         (Handle)
 import qualified Graphics.UI.Threepenny      as UI
 import           Graphics.UI.Threepenny.Core
@@ -13,31 +13,23 @@ import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
 import           Text.Printf
+import           Utility
+
+startView :: IO ()
 startView = main
 -- start a Threepenny server that listens on port 8023 (this is the default)
-main = startGUI
+main :: IO ()
+main = do
+    launchAppInBrowser 8023
+    initStart
+
+
+
+initStart :: IO ()
+initStart =startGUI
     (defaultConfig { jsPort = Just 8023, jsStatic = Just "static" })
     setup4
-
 -- build a user interface whenver a browser connects to the server
-setup :: Window -> UI ()
-setup window = do
-
-    -- set window titl
-    return window # set UI.title "Sudoku"
-
-    -- create a button element
-    button  <- UI.button #set UI.style [("color","green"),("background","black")] # set UI.text "Click me1!"
-    button2 <- UI.button # set UI.text "Click me23456!"
-    -- attach button to the HTML body, so that it is displayed
-    getBody window #+ [element button]
-    getBody window #+ [element button2]
-
-    -- register an event handler for clicking the button
-    on UI.hover button $ \_ -> do
-        element button # set UI.style [("color","red"),("background","blue")]
-    on UI.leave button $ \_ -> do
-        element button # set UI.style [("color","green"),("background","black")]
 
 setup2 :: Window -> UI ()
 setup2 window = void $ do
@@ -68,14 +60,6 @@ setup2 window = void $ do
     element dollar # sink value dollarOut
 
 
-
--- | launch application in default web browser
--- up :: IO ()
--- up = do
---   let port = 8023
---   launchAppInBrowser port
---   start port
-
 -- | convenience function that opens the 3penny UI in the default web browser
 launchAppInBrowser:: Int -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 launchAppInBrowser port = case os of
@@ -84,19 +68,41 @@ launchAppInBrowser port = case os of
   _         -> createProcess  (shell $ "xdg-open " ++ url)
   where url = "http://localhost:" ++ show port
 
+setup4 :: Window -> UI ()
 setup4 w =void $ do
-    buttons <- replicateM 81 UI.button
-    let labeledbuttons = zip buttons [show x | x<- [1..81]]
-    sequence_ [element b # set UI.text t # set UI.style [("color","green"),("background","black")] | (b,t) <- labeledbuttons]
-    -- sequence_ [on UI.hover b    (\_ -> callback b t) | (b,t) <- labeledbuttons]
-    getBody w #+ [UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan 9) #+ []]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 9 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 18 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 27 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 36 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 45 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 54 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 63 buttons]]
-        ++ [UI.tr #+ [UI.td #+ [element b] | b <- take 9 $ drop 72 buttons]])
+    -- title
+    return w # set UI.title "sudoku"
+
+--buttons
+    buttons <- replicateM (nrOfElem*nrOfElem) UI.button
+
+-- initial actions
+    let inField = initSudokuField2
+    let labeledbuttons = zip buttons [x | x<- inField]
+    sequence_ [element b # set UI.text  (fieldToChar2 t) # set UI.style [("color","green"),("background","black")] | (b,t) <- labeledbuttons]
+    sequence_ [on UI.hover b  (\_ -> element b # set UI.style [("color","red")])| (b,t) <- labeledbuttons]
+    sequence_ [on UI.leave b  (\_ -> element b # set UI.style [("color","green")])| (b,t) <- labeledbuttons]
+    sequence_ [on UI.click b  (\_ -> element b # set UI.text (fieldToChar2 (changeDigit t)))| (b,t) <- labeledbuttons]
+
+-- sudoku build
+    getBody w #+[row
+        [grid
+        [[UI.div #. "header" #+ [string "Sudoku"],UI.div #. "right" #+ [string "Sudoku2"]],
+        [UI.div#."col-md-8" #+ [string "Test"]],
+        [UI.div #. "left" #+ [string "navi"],UI.div#."right" #+ (createHTMLSudoku buttons)]]
         ]
+        ]
+
+
+
+
+-- | Create html sudoku table
+createHTMLSudoku :: [Element] -> [UI Element]
+createHTMLSudoku buttons=[UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan 9) #+ []]]
+        ++ concat[createHtmlRow x nrOfElem buttons | x<-[1..nrOfElem]])
+        ]
+
+-- | create sudoku rows
+-- splitted from main function to make it more readable
+createHtmlRow ::  Int -> Int -> [Element] -> [UI Element]
+createHtmlRow nrRow nrEl buttonslst = [UI.tr #+ [UI.td #+ [element b] | b <- take nrEl $ drop (nrEl*nrRow) buttonslst]]

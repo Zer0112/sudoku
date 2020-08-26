@@ -1,4 +1,31 @@
-{ ? // See https://go.microsoft.com/fwlink/?LinkId=733558
+{ // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version"
-  : "2.0.0", "tasks": [{ "label": "stack run", "type": "shell", "command": "cd ${workspaceFolder} && stack build --fast && stack exec sudoku-exe" }] }
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "stack build fast",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && stack build --fast --file-watch"
+        },
+        {
+            "label": "stack exec",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && stack exec"
+        },
+        {
+            "label": "stack run fast",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} &&stack build --fast && stack exec sudoku-exe",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "stack run",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && stack run"
+        }
+    ]
+}

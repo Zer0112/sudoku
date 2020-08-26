@@ -3,17 +3,18 @@
 module GameField
     ( Digit(..)
     , SudokuField(..)
-    , Sudoku(..)
+    , Sudoku
     ,validAll,
-    entry
+    entry,
+    nrOfElem
     )
 where
 import           Control.Lens
-
+-- todo fix [digit]
 -- |type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
 instance Show Digit where
-    show EmptyField = show 0
+    show EmptyField = " "
     show One        = show 1
     show Two        = show 2
     show Three      = show 3
@@ -38,7 +39,6 @@ nrBox = 3
 -- | data type to represent the sudoku game as whole
 type Sudoku = [SudokuField]
 
-
 -- | data type to represent the sudoku game
 data SudokuField = SudokuField {_col::Int,
                                         _row::Int,
@@ -47,8 +47,7 @@ makeLenses ''SudokuField
 
 instance Show SudokuField where
     show field =
-        show (field ^. col) ++ " " ++ show (field ^. row) ++ "  " ++ show
-            (field ^. entry)
+        show (field ^. entry)
 
 
 -- | gives True if both entries are in the same row
@@ -83,14 +82,18 @@ allFilter =
 
 -- | basic condition for a valid entry check
 validOne :: SudokuField -> SudokuField -> Bool
-validOne f1 f2 = f1 ^. entry /= f2 ^. entry
+validOne f1 f2 
+    | f1^.entry == [EmptyField] = False -- field not empty
+    |otherwise =f1 ^. entry /= f2 ^. entry -- entry different
+--todo check if i did made it right with ignoring the same position
+
 
 -- | List of all to check entries for one entry
-listOfTestValid :: SudokuField -> [SudokuField] -> [SudokuField]
+listOfTestValid :: SudokuField -> Sudoku -> [SudokuField]
 listOfTestValid field sudo = filter (allFilter field) sudo
 
 -- | checks if entry is valid
-validEntry :: SudokuField -> [SudokuField] -> Bool
+validEntry :: SudokuField -> Sudoku -> Bool
 validEntry field sudoku = and filterEntry
     where filterEntry = (map (\x -> (validOne field x)) sudoku)
 

@@ -3,7 +3,12 @@ module Solver
 where
 import           GameField
 
-solve =filter validAll.expanedChoices undefined
+solve =filter validAll.expanedChoices
 
 
-expanedChoices = undefined
+expanedChoices :: Sudoku -> [Sudoku]
+expanedChoices sudoku = map expandField sudoku
+
+
+expandField :: SudokuField -> [SudokuField]
+expandField sField@(SudokuField col row entry) = [SudokuField col row [e] | e <-entry]

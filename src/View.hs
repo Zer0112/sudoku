@@ -20,7 +20,7 @@ startView = main
 -- start a Threepenny server that listens on port 8023 (this is the default)
 main :: IO ()
 main = do
-    launchAppInBrowser 8023
+    -- launchAppInBrowser 8023
     initStart
 
 
@@ -68,6 +68,7 @@ launchAppInBrowser port = case os of
   _         -> createProcess  (shell $ "xdg-open " ++ url)
   where url = "http://localhost:" ++ show port
 
+
 setup4 :: Window -> UI ()
 setup4 w =void $ do
     -- title
@@ -78,20 +79,30 @@ setup4 w =void $ do
 
 -- initial actions
     let inField = initSudokuField2
-    let labeledbuttons = zip buttons [x | x<- inField]
-    sequence_ [element b # set UI.text  (fieldToChar2 t) # set UI.style [("color","green"),("background","black")] | (b,t) <- labeledbuttons]
-    sequence_ [on UI.hover b  (\_ -> element b # set UI.style [("color","red")])| (b,t) <- labeledbuttons]
-    sequence_ [on UI.leave b  (\_ -> element b # set UI.style [("color","green")])| (b,t) <- labeledbuttons]
+    let labeledbuttons = zip buttons inField
+    let boxColor (SudokuField a b _ ) | even ((a-1) `div` nrBox+ ((b-1) `div` nrBox)) = "red"
+                    | otherwise = ""
+
+    -- basic styling for sudoku buttons
+    sequence_ [element b # set UI.text  (fieldToChar2 t) # set UI.style [("class","button"),("color","black"),("width","50px"),("height","50px"), ("background-color", boxColor t)] | (b,t) <- labeledbuttons]
+
+    sequence_ [on UI.hover b  (\_ -> element b # set UI.style [("color","green")])| (b,_) <- labeledbuttons]
+    sequence_ [on UI.leave b  (\_ -> element b # set UI.style [("color","black")])| (b,_) <- labeledbuttons]
+
     sequence_ [on UI.click b  (\_ -> element b # set UI.text (fieldToChar2 (changeDigit t)))| (b,t) <- labeledbuttons]
 
 -- sudoku build
-    getBody w #+[row
-        [grid
-        [[UI.div #. "header" #+ [string "Sudoku"],UI.div #. "right" #+ [string "Sudoku2"]],
-        [UI.div#."col-md-8" #+ [string "Test"]],
-        [UI.div #. "left" #+ [string "navi"],UI.div#."right" #+ (createHTMLSudoku buttons)]]
-        ]
-        ]
+    getBody w
+        #+
+            [UI.div  #+ [UI.h1 #set UI.text "Sudoku 9000 - The Game"] # set UI.style [("color","blue"),("text-align","center")],grid
+            [
+
+            [UI.div #. "left" #+ [UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku"],
+
+            UI.div#. "right" #+ createHTMLSudoku buttons # set UI.style [("text-align","center"),("border-style","solid"),("border-width","5px"),("margin","50px")]]]
+            ]
+
+
 
 
 
@@ -99,7 +110,7 @@ setup4 w =void $ do
 -- | Create html sudoku table
 createHTMLSudoku :: [Element] -> [UI Element]
 createHTMLSudoku buttons=[UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan 9) #+ []]]
-        ++ concat[createHtmlRow x nrOfElem buttons | x<-[1..nrOfElem]])
+        ++ concat[createHtmlRow x nrOfElem buttons | x<-[0..nrOfElem]])
         ]
 
 -- | create sudoku rows

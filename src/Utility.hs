@@ -19,10 +19,16 @@ initField =
     , y <- [1..maxBound]
     ]
 
+-- |creates a dummy field for testing
 initSudokuField2 :: [SudokuField]
 initSudokuField2 = createSudokuField [enumFrom One | x<-[1..9]]
 
-
+-- >>> test
+-- Prelude.undefined
+-- CallStack (from HasCallStack):
+--   error, called at libraries\base\GHC\Err.hs:78:14 in base:GHC.Err
+--   undefined, called at d:\Documents\Code\haskell\sudoku\src\Utility.hs:55:27 in fake_uid:Utility
+test :: IO ()
 test =print $ stringToSudoku ['1', '2', '3', '4', '5']
 test2 =print $ sudokuToString initSudokuField2
 -- >>> test2
@@ -89,7 +95,7 @@ fieldToChar2 field = concat $ map digitToChar (field^.entry)
     where
     digitToChar :: Digit -> [Char]
     digitToChar dig
-        | dig==EmptyField =" "
+        | dig==EmptyField ="-"
         | otherwise =show dig
 
 changeDigit :: SudokuField->SudokuField

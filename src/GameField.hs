@@ -6,10 +6,11 @@ module GameField
     , Sudoku
     ,validAll,
     entry,
-    nrOfElem
+    nrOfElem,
+    nrBox
     )
 where
-import           Control.Lens
+import Control.Lens ( (^.), makeLenses )
 -- todo fix [digit]
 -- |type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
@@ -32,14 +33,19 @@ instance Show Digit where
 -- 9
 nrOfElem :: Int
 nrOfElem = fromEnum (maxBound :: Digit)
+
+
 -- | nr of boxes in one row/col
+-- for now it is just fixed to 3 but i may extend it later
 nrBox :: Int
 nrBox = 3
 
 -- | data type to represent the sudoku game as whole
+-- It is a list of all Sudokufields
 type Sudoku = [SudokuField]
 
 -- | data type to represent the sudoku game
+-- col and row starts at 1 and goes to nrOfElem
 data SudokuField = SudokuField {_col::Int,
                                         _row::Int,
                                         _entry::[Digit]}
@@ -48,6 +54,11 @@ makeLenses ''SudokuField
 instance Show SudokuField where
     show field =
         show (field ^. entry)
+
+instance Eq SudokuField where
+    (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _) | col1 == col2  && row1 ==row2 = True
+                                                            | otherwise = False
+
 
 
 -- | gives True if both entries are in the same row
@@ -64,13 +75,13 @@ colFilter sudF1 sudF2 = sudF1 ^. col == sudF2 ^. col
 -- | gives True if both entries are in the same box
 boxFilter :: SudokuField -> SudokuField -> Bool
 boxFilter sudF1 sudF2 =
-    fromEnum (sudF1 ^. col)
+    sudF1 ^. col
         `div` nrBox
-        ==    fromEnum (sudF2 ^. col)
+        ==    sudF2 ^. col
         `div` nrBox
-        &&    fromEnum (sudF1 ^. row)
+        &&    sudF1 ^. row
         `div` nrBox
-        ==    fromEnum (sudF2 ^. row)
+        ==     sudF2 ^. row
         `div` nrBox
 
 -- | filter sudokufield to be in same row and col and box but not the same
@@ -99,5 +110,4 @@ validEntry field sudoku = and filterEntry
 
 -- | checks the whole sudoku
 validAll :: Sudoku -> Bool
-validAll sudoku = and $ map (\x -> validEntry x sudoku) sudoku
-
+validAll sudoku = all (`validEntry` sudoku) sudoku

@@ -14,14 +14,14 @@ import           System.IO
 -- |creates a dummy field for testing
 initField :: [SudokuField]
 initField =
-    [ SudokuField x y [Two]
+    [ SudokuField x y Two
     | x <- [1..maxBound]
     , y <- [1..maxBound]
     ]
 
 -- |creates a dummy field for testing
 initSudokuField2 :: [SudokuField]
-initSudokuField2 = createSudokuField [enumFrom One | x<-[1..9]]
+initSudokuField2 = createSudokuField [enumFromTo EmptyField Eight | x<-[1..9]]
 
 -- >>> test
 -- Prelude.undefined
@@ -36,7 +36,7 @@ createSudokuField :: [[Digit]] -> [SudokuField]
 createSudokuField digList = concat [rowCreate nrRow dlist|(nrRow,dlist) <-zip [1..] digList]
 
 rowCreate :: Int-> [Digit] -> [SudokuField]
-rowCreate nrRow digList =concat[[SudokuField i nrRow [d]] | (d,i)<- zip digList [1..]]
+rowCreate nrRow digList =concat[[SudokuField i nrRow d] | (d,i)<- zip digList [1..]]
 
 -- | reads in a Sudoku from a file
 -- the sudoku has to be in line and empty field is 0
@@ -82,7 +82,7 @@ charToSud ch
 --todo in general deal with incorrect sudoku formats
 -- | creates a String from a Sudokufield with empty = 0
 fieldToChar :: SudokuField -> [Char]
-fieldToChar field = concat $ map digitToChar (field^.entry)
+fieldToChar field = digitToChar (field^.entry)
     where
     digitToChar :: Digit -> [Char]
     digitToChar dig
@@ -91,7 +91,7 @@ fieldToChar field = concat $ map digitToChar (field^.entry)
 
 -- |creates a String from a Sudokufield with empty = " "
 fieldToChar2 :: SudokuField -> [Char]
-fieldToChar2 field = concat $ map digitToChar (field^.entry)
+fieldToChar2 field = digitToChar (field^.entry)
     where
     digitToChar :: Digit -> [Char]
     digitToChar dig
@@ -101,7 +101,7 @@ fieldToChar2 field = concat $ map digitToChar (field^.entry)
 changeDigit :: SudokuField->SudokuField
 changeDigit (SudokuField row col ent) =SudokuField row col (incDig ent)
     where
-        incDig lst=map succ1 lst
+        incDig lst=succ1 lst
         succ1 dig
                 | dig==(maxBound :: Digit) = EmptyField
                 |otherwise =succ dig

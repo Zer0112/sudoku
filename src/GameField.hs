@@ -11,7 +11,7 @@ module GameField
     )
 where
 import Control.Lens ( (^.), makeLenses )
--- todo fix [digit]
+
 -- |type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
 instance Show Digit where
@@ -48,7 +48,7 @@ type Sudoku = [SudokuField]
 -- col and row starts at 1 and goes to nrOfElem
 data SudokuField = SudokuField {_col::Int,
                                         _row::Int,
-                                        _entry::[Digit]}
+                                        _entry::Digit}
 makeLenses ''SudokuField
 
 instance Show SudokuField where
@@ -94,7 +94,7 @@ allFilter =
 -- | basic condition for a valid entry check
 validOne :: SudokuField -> SudokuField -> Bool
 validOne f1 f2 
-    | f1^.entry == [EmptyField] = False -- field not empty
+    | f1^.entry == EmptyField = False -- field not empty
     |otherwise =f1 ^. entry /= f2 ^. entry -- entry different
 --todo check if i did made it right with ignoring the same position
 

@@ -5,14 +5,15 @@ where
 
 import           Control.Monad
 import           GameField
+
 import           GHC.IO.Handle.Types         (Handle)
 import qualified Graphics.UI.Threepenny      as UI
 import           Graphics.UI.Threepenny.Core
-import           Safe                        (readMay)
+
 import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
-import           Text.Printf
+
 import           Utility
 
 startView :: IO ()
@@ -28,36 +29,9 @@ main = do
 initStart :: IO ()
 initStart =startGUI
     (defaultConfig { jsPort = Just 8023, jsStatic = Just "static" })
-    setup4
+    setup
 -- build a user interface whenver a browser connects to the server
 
-setup2 :: Window -> UI ()
-setup2 window = void $ do
-    return window # set title "Currency Converter"
-
-    dollar <- UI.input
-    euro   <- UI.input
-
-    getBody window
-        #+ [ column
-                 [ grid
-                     [ [string "Dollar:", element dollar]
-                     , [string "Euro:", element euro]
-                     ]
-                 , string "Amounts update while typing."
-                 ]
-           ]
-
-    euroIn   <- stepper "0" $ UI.valueChange euro
-    dollarIn <- stepper "0" $ UI.valueChange dollar
-    let rate = 0.7 :: Double
-        withString f = maybe "-" (printf "%.2f") . fmap f . readMay
-
-        dollarOut = withString (/ rate) <$> euroIn
-        euroOut   = withString (* rate) <$> dollarIn
-
-    element euro # sink value euroOut
-    element dollar # sink value dollarOut
 
 
 -- | convenience function that opens the 3penny UI in the default web browser
@@ -69,37 +43,44 @@ launchAppInBrowser port = case os of
   where url = "http://localhost:" ++ show port
 
 
-setup4 :: Window -> UI ()
-setup4 w =void $ do
+setup :: Window -> UI ()
+setup w =void $ do
     -- title
     return w # set UI.title "sudoku"
 
 --buttons
     buttons <- replicateM (nrOfElem*nrOfElem) UI.button
 
--- initial actions
+-- initial
     let inField = initSudokuField2
     let labeledbuttons = zip buttons inField
-    let boxColor (SudokuField a b _ ) | even ((a-1) `div` nrBox+ ((b-1) `div` nrBox)) = "red"
+    -- color the sudoku boxes
+    let boxColor (SudokuField a b _ ) | even ((a-1) `div` nrBox+ ((b-1) `div` nrBox)) = "#A9BCF5"
                     | otherwise = ""
+    -- color empty/playable fields
+    let elmColor (SudokuField _ _ entry) | entry == EmptyField = "red"
+                        | otherwise = "black"
+    -- hoover color text
+    let hoverColorText (SudokuField _ _ entry) | entry == EmptyField = "green"
+                        | otherwise = "black"
+    -- highlight changeable fields
+    let hoverColorBackground field@(SudokuField _ _ entry) | entry == EmptyField = "#D0FA58"
+                        | otherwise = boxColor field
 
     -- basic styling for sudoku buttons
-    sequence_ [element b # set UI.text  (fieldToChar2 t) # set UI.style [("class","button"),("color","black"),("width","50px"),("height","50px"), ("background-color", boxColor t)] | (b,t) <- labeledbuttons]
+    sequence_ [element b # set UI.text  (fieldToChar2 t) # set UI.style [("class","button"),("color", elmColor t),("width","50px"),("height","50px"), ("background-color", boxColor t)] | (b,t) <- labeledbuttons]
 
-    sequence_ [on UI.hover b  (\_ -> element b # set UI.style [("color","green")])| (b,_) <- labeledbuttons]
-    sequence_ [on UI.leave b  (\_ -> element b # set UI.style [("color","black")])| (b,_) <- labeledbuttons]
+    sequence_ [on UI.hover b  (\_ -> element b # set UI.style [("color",hoverColorText t),("background-color",hoverColorBackground t)])| (b,t) <- labeledbuttons]
+    sequence_ [on UI.leave b  (\_ -> element b # set UI.style [("color", elmColor t),("background-color",boxColor t)])| (b,t) <- labeledbuttons]
 
     sequence_ [on UI.click b  (\_ -> element b # set UI.text (fieldToChar2 (changeDigit t)))| (b,t) <- labeledbuttons]
-
+-- todo: change it to playable
 -- sudoku build
     getBody w
         #+
-            [UI.div  #+ [UI.h1 #set UI.text "Sudoku 9000 - The Game"] # set UI.style [("color","blue"),("text-align","center")],grid
-            [
+            [UI.div  #+ [UI.h1 #set UI.text "Sudoku 9000 - The Game"] # set UI.style [("color","blue"),("text-align","center")],
 
-            [UI.div #. "left" #+ [UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku",UI.button # set UI.text "Sudoku"],
-
-            UI.div#. "right" #+ createHTMLSudoku buttons # set UI.style [("text-align","center"),("border-style","solid"),("border-width","5px"),("margin","50px")]]]
+            UI.div #+ createHTMLSudoku buttons  # set UI.style [("border-style","solid"),("border-width","0px")]
             ]
 
 
@@ -109,11 +90,9 @@ setup4 w =void $ do
 
 -- | Create html sudoku table
 createHTMLSudoku :: [Element] -> [UI Element]
-createHTMLSudoku buttons=[UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan 9) #+ []]]
-        ++ concat[createHtmlRow x nrOfElem buttons | x<-[0..nrOfElem]])
-        ]
-
--- | create sudoku rows
--- splitted from main function to make it more readable
-createHtmlRow ::  Int -> Int -> [Element] -> [UI Element]
-createHtmlRow nrRow nrEl buttonslst = [UI.tr #+ [UI.td #+ [element b] | b <- take nrEl $ drop (nrEl*nrRow) buttonslst]]
+createHTMLSudoku buttons=[UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan nrOfElem) #+ []]]
+        ++ concat[createHtmlRow x nrOfElem buttons | x<-[0..nrOfElem]]) # set UI.style [("margin-left","auto"),("margin-right","auto")]
+        ] where
+            -- | create sudoku rows
+            createHtmlRow ::  Int -> Int -> [Element] -> [UI Element]
+            createHtmlRow nrRow nrEl buttonslst = [UI.tr #+ [UI.td #+ [element b] | b <- take nrEl $ drop (nrEl*nrRow) buttonslst]]

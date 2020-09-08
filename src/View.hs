@@ -3,18 +3,24 @@ module View
     )
 where
 
-import           Control.Monad
-import           GameField
+import           Control.Monad               (replicateM, void)
+import           GameField                   (Digit (EmptyField),
+                                              SudokuField (SudokuField), nrBox,
+                                              nrOfElem)
 
 import           GHC.IO.Handle.Types         (Handle)
 import qualified Graphics.UI.Threepenny      as UI
-import           Graphics.UI.Threepenny.Core
+import           Graphics.UI.Threepenny.Core (Config (jsPort, jsStatic),
+                                              Element, UI, Window,
+                                              defaultConfig, element, getBody,
+                                              on, set, startGUI, ( # ), ( #+ ))
 
 import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
 
-import           Utility
+import           Utility                     (changeDigit, fieldToChar2,
+                                              initSudokuField2)
 
 startView :: IO ()
 startView = main
@@ -35,6 +41,7 @@ initStart =startGUI
 
 
 -- | convenience function that opens the 3penny UI in the default web browser
+-- copied from one of the three penny examples
 launchAppInBrowser:: Int -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 launchAppInBrowser port = case os of
   "mingw32" -> createProcess  (shell $ "start "    ++ url)
@@ -47,7 +54,7 @@ setup :: Window -> UI ()
 setup w =void $ do
     -- title
     return w # set UI.title "sudoku"
-
+    UI.addStyleSheet w "bootstrap.min.css"
 --buttons
     buttons <- replicateM (nrOfElem*nrOfElem) UI.button
 
@@ -78,9 +85,9 @@ setup w =void $ do
 -- sudoku build
     getBody w
         #+
-            [UI.div  #+ [UI.h1 #set UI.text "Sudoku 9000 - The Game"] # set UI.style [("color","blue"),("text-align","center")],
+            [UI.div  #+ [UI.h1 #set UI.text "Sudoku 9000 - The Game"] # set UI.style [("color","#A9BCF5"),("text-align","center"),("text-shadow", "2px 2px 50px"),("box-shadow","20px 20px 100px grey")],
 
-            UI.div #+ createHTMLSudoku buttons  # set UI.style [("border-style","solid"),("border-width","0px")]
+            UI.div #+ createHTMLSudoku buttons  # set UI.style []
             ]
 
 
@@ -90,8 +97,8 @@ setup w =void $ do
 
 -- | Create html sudoku table
 createHTMLSudoku :: [Element] -> [UI Element]
-createHTMLSudoku buttons=[UI.table #+ (    [UI.tr #+ [(UI.td # set UI.colspan nrOfElem) #+ []]]
-        ++ concat[createHtmlRow x nrOfElem buttons | x<-[0..nrOfElem]]) # set UI.style [("margin-left","auto"),("margin-right","auto")]
+createHTMLSudoku buttons=[UI.table  #+ (    [UI.tr #+ [(UI.td # set UI.colspan nrOfElem) #+ []]]
+        ++ concat[createHtmlRow x nrOfElem buttons | x<-[0..nrOfElem]]) # set UI.style [("margin-left","auto"),("margin-right","auto"),("margin-top","10%")]
         ] where
             -- | create sudoku rows
             createHtmlRow ::  Int -> Int -> [Element] -> [UI Element]

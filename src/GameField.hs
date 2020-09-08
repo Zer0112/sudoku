@@ -56,13 +56,13 @@ instance Show SudokuField where
         show (field ^. entry)
 
 instance Eq SudokuField where
-    (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _) | col1 == col2  && row1 ==row2 = True
-                                                            | otherwise = False
+    (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _)    | col1 == col2  && row1 ==row2 = True
+                                                                | otherwise = False
 
 
 
 -- | gives True if both entries are in the same row
--- >>> rowFilter (SudokuField One One [One]) (SudokuField One One [One])
+-- >>> rowFilter (SudokuField 1 1 One) (SudokuField 1 1 One)
 -- True
 
 rowFilter :: SudokuField -> SudokuField -> Bool

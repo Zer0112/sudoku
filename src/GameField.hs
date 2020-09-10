@@ -1,19 +1,22 @@
-
 {-# LANGUAGE TemplateHaskell #-}
+
 module GameField
-    ( Digit(..)
-    , SudokuField(..)
-    , Sudoku
-    ,validAll,
-    entry,
-    nrOfElem,
-    nrBox
+    ( Digit (..),
+      SudokuField (..),
+      Sudoku,
+      validAll,
+      entry,
+      nrOfElem,
+      nrBox,
+
     )
 where
-import Control.Lens ( (^.), makeLenses )
 
--- |type for the digit in the sudoku game
-data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight |Nine deriving(Eq,Ord, Enum, Bounded)
+import           Control.Lens (makeLenses, (^.))
+
+-- | type for the digit in the sudoku game
+data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight | Nine deriving (Eq, Ord, Enum, Bounded)
+
 instance Show Digit where
     show EmptyField = " "
     show One        = show 1
@@ -26,14 +29,16 @@ instance Show Digit where
     show Eight      = show 8
     show Nine       = show 9
 
+-- for creating sudokus with arbitrary numbers
+-- not implemented yet
+newtype DigitFelxible = DigitFlex Integer deriving (Show, Eq, Ord)
 
 -- | returns for how many numbers the sudoku is made - 9 for normal sudoku
 -- intended for easier extention to more numbers if i want to play around with it later
--- >>> nrOfElem
--- 9
+-- >>> nrOfElem == fromEnum (maxBound :: Digit)
+-- True
 nrOfElem :: Int
-nrOfElem = fromEnum (maxBound :: Digit)
-
+nrOfElem = 9
 
 -- | nr of boxes in one row/col
 -- for now it is just fixed to 3 but i may extend it later
@@ -46,9 +51,12 @@ type Sudoku = [SudokuField]
 
 -- | data type to represent the sudoku game
 -- col and row starts at 1 and goes to nrOfElem
-data SudokuField = SudokuField {_col::Int,
-                                        _row::Int,
-                                        _entry::Digit}
+data SudokuField = SudokuField
+    { _col   :: Int,
+      _row   :: Int,
+      _entry :: Digit
+    }
+
 makeLenses ''SudokuField
 
 instance Show SudokuField where
@@ -56,15 +64,15 @@ instance Show SudokuField where
         show (field ^. entry)
 
 instance Eq SudokuField where
-    (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _)    | col1 == col2  && row1 ==row2 = True
-                                                                | otherwise = False
+    (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _)
+        | col1 == col2 && row1 == row2 = True
+        | otherwise = False
 
-
+-- TODO remove section after implemented in solver?
 
 -- | gives True if both entries are in the same row
 -- >>> rowFilter (SudokuField 1 1 One) (SudokuField 1 1 One)
 -- True
-
 rowFilter :: SudokuField -> SudokuField -> Bool
 rowFilter sudField1 sudField2 = sudField1 ^. row == sudField2 ^. row
 
@@ -77,27 +85,27 @@ boxFilter :: SudokuField -> SudokuField -> Bool
 boxFilter sudF1 sudF2 =
     sudF1 ^. col
         `div` nrBox
-        ==    sudF2 ^. col
+        == sudF2 ^. col
         `div` nrBox
-        &&    sudF1 ^. row
+        && sudF1 ^. row
         `div` nrBox
-        ==     sudF2 ^. row
+        == sudF2 ^. row
         `div` nrBox
 
 -- | filter sudokufield to be in same row and col and box but not the same
 allFilter :: SudokuField -> SudokuField -> Bool
 allFilter =
-    (\sud x -> ((boxFilter sud x) || (colFilter sud x) || boxFilter sud x)
-        && not ((sud ^. col == x ^. col) && (sud ^. col == x ^. col))
+    ( \sud x ->
+          ((boxFilter sud x) || (colFilter sud x) || boxFilter sud x)
+              && not ((sud ^. col == x ^. col) && (sud ^. col == x ^. col))
     )
 
 -- | basic condition for a valid entry check
 validOne :: SudokuField -> SudokuField -> Bool
-validOne f1 f2 
-    | f1^.entry == EmptyField = False -- field not empty
-    |otherwise =f1 ^. entry /= f2 ^. entry -- entry different
---todo check if i did made it right with ignoring the same position
-
+validOne f1 f2
+    | f1 ^. entry == EmptyField = False -- field not empty
+    | otherwise = f1 ^. entry /= f2 ^. entry -- entry different
+    --todo check if i did made it right with ignoring the same position
 
 -- | List of all to check entries for one entry
 listOfTestValid :: SudokuField -> Sudoku -> [SudokuField]
@@ -106,7 +114,8 @@ listOfTestValid field sudo = filter (allFilter field) sudo
 -- | checks if entry is valid
 validEntry :: SudokuField -> Sudoku -> Bool
 validEntry field sudoku = and filterEntry
-    where filterEntry = (map (\x -> (validOne field x)) sudoku)
+    where
+        filterEntry = (map (\x -> (validOne field x)) sudoku)
 
 -- | checks the whole sudoku
 validAll :: Sudoku -> Bool

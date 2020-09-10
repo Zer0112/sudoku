@@ -1,8 +1,7 @@
 module Main where
 
-import           View
+import View
 
 main :: IO ()
 main = do
-    startView
-
+  startView

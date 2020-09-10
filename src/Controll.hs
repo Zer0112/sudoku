@@ -1,3 +1,1 @@
-module Controll
-    ()
-where
+module Controll () where

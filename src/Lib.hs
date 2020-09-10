@@ -1,4 +1,1 @@
-module Lib
-    (
-    )
-where
+module Lib () where

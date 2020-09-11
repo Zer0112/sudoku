@@ -41,7 +41,7 @@ setupDefaultIO :: [SudokuField] -> IO ()
 setupDefaultIO sud=
      startGUI
     (defaultConfig {jsPort = Just 8023, jsStatic = Just "static"})
-    (setup sud)
+    (setup sud 1)
 -- build a user interface whenver a browser connects to the server
 
 -- | convenience function that opens the 3penny UI in the default web browser
@@ -55,12 +55,11 @@ launchAppInBrowser port = case os of
   where
     url = "http://localhost:" ++ show port
 
--- setup :: Window -> UI ()
-setup :: [SudokuField] -> Window -> UI ()
-setup sud w = void $
+setup :: [SudokuField] -> Int->Window-> UI ()
+setup sud i w = void $
   do
     store <-liftIO $ replicateM (nrOfElem ^ 2) $ newIORef 0
-    count <- liftIO $ newIORef 1
+    count <- liftIO $ newIORef i
 
     -- title
     return w # set UI.title "sudoku"
@@ -89,6 +88,7 @@ setup sud w = void $
     let hoverColorBackground field@(SudokuField _ _ entry)
           | entry == EmptyField = "#D0FA58"
           | otherwise = boxColor field
+    -- style
     let styleh1 =[("color", "#A9BCF5"),
                  ("text-align", "center"),
                  ("text-shadow", "2px 2px 50px"),
@@ -117,10 +117,10 @@ setup sud w = void $
 
     -- action of next to show the next sudoku based on IORef counter
     on UI.click nextB (\_ ->do
+        liftIO $ modifyIORef count (+1)
         ind <-liftIO $ readIORef count
         x <-liftIO $readInSudoku ind "sudoku17.txt"
-        liftIO $ modifyIORef count (+1)
-        setup x w
+        setup x ind w
 
         -- for clearing the screen but i like it better otherwise
         -- let g = getElementsByTagName w (show ind)
@@ -130,8 +130,9 @@ setup sud w = void $
         )
     -- todo implement solveB
     solveB <- UI.button
-    on UI.click solveB (\_ ->
-        setup initSudokuField2 w
+    on UI.click solveB (\_ ->do
+        temp <- liftIO $ readIORef count
+        setup initSudokuField2 temp w
         )
 
 
@@ -140,14 +141,7 @@ setup sud w = void $
     sudButtonGrid labeledbuttons elmColor boxColor
     sudButtonHoover labeledbuttons hoverColorText hoverColorBackground
     sudButtonLeave labeledbuttons elmColor boxColor
-    sequence_
-      [ on
-          UI.click
-          b
-          (\_ -> callChange b t r)
-        | (b, t, r) <- labeledbuttons , t^.entry == EmptyField
-      ]
-
+    sudClick labeledbuttons
 
 
 
@@ -196,7 +190,7 @@ createHTMLSudoku buttons =
              ]
       ]
 
-
+-- | creates the sudoku grid e.g. it colours the sudoku boxes
 sudButtonGrid labeledbuttons elmColor boxColor=
     sequence_
       [ element b
@@ -212,7 +206,7 @@ sudButtonGrid labeledbuttons elmColor boxColor=
         | (b, t,_) <- labeledbuttons
       ]
 
-
+-- | highlight the field on hoover if it can be changed/empty
 sudButtonHoover labeledbuttons hoverColorText hoverColorBackground =
     sequence_
         [ on
@@ -229,7 +223,7 @@ sudButtonHoover labeledbuttons hoverColorText hoverColorBackground =
             | (b, t,_) <- labeledbuttons
         ]
 
-
+-- | resets hoover to normal state
 sudButtonLeave labeledbuttons elmColor boxColor =
     sequence_
       [ on
@@ -244,8 +238,18 @@ sudButtonLeave labeledbuttons elmColor boxColor =
         | (b, t,_) <- labeledbuttons
       ]
 
+sudClick labeledbuttons = sequence_
+        [ on
+            UI.click
+            b
+            (\_ -> callChange b r)
+            | (b, t, r) <- labeledbuttons , t^.entry == EmptyField
+        ]
 
-callChange b t r = do
+
+-- | the abstract sudoku game in the view
+-- the values are stored in IOref and change on click to succ value mod (maxbound+emptyfield)
+callChange b r = do
     liftIO $ modifyIORef r (\x ->((x+1) `mod` (nrOfElem+1) ))
     r <- liftIO $ readIORef r
     element b # set UI.text (rep r)

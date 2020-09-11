@@ -33,7 +33,10 @@ createSudokuField digList = concat [rowCreate nrRow dlist | (nrRow, dlist) <- zi
 rowCreate :: Int -> [Digit] -> [SudokuField]
 rowCreate nrRow digList = concat [[SudokuField i nrRow d] | (d, i) <- zip digList [1 ..]]
 
--- TODO Fix it infinite loop
+
+
+-- inport/export functions
+
 
 -- | reads in a Sudoku from a file
 -- the sudoku has to be in line and empty field is 0
@@ -52,6 +55,12 @@ exportSudoku :: FilePath -> Sudoku -> IO ()
 exportSudoku name sudoku =
   writeFile name (sudokuToString sudoku)
 
+
+
+
+-- convert string to sudoku and reverse
+
+
 -- | creates a sudoku from a string
 -- >>> stringToSudoku "1234"
 -- [1,2,3,4]
@@ -63,12 +72,13 @@ stringToSudoku lst
   where
     t = mapM charToSud lst
 
+-- | handeling invalid sudoku with replacing it with an empty sudoku
 -- >>> stringToSudokuHelper2 (Just [One, One])
 -- [1,1]
 stringToSudokuHelper2 :: Maybe [Digit] -> [SudokuField]
 -- error handeling for not digit
 stringToSudokuHelper2 Nothing    = initField
-stringToSudokuHelper2 (Just dig) = stringToSudokuHelper dig (1)
+stringToSudokuHelper2 (Just dig) = stringToSudokuHelper dig 1
 
 -- >>> stringToSudokuHelper [One, One] 2
 -- [1,1]

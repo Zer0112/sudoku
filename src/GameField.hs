@@ -69,6 +69,8 @@ instance Eq SudokuField where
         | otherwise = False
 
 -- TODO remove section after implemented in solver?
+-- legacy section that maybe useful for view in case of later expansion
+
 
 -- | gives True if both entries are in the same row
 -- >>> rowFilter (SudokuField 1 1 One) (SudokuField 1 1 One)
@@ -105,7 +107,6 @@ validOne :: SudokuField -> SudokuField -> Bool
 validOne f1 f2
     | f1 ^. entry == EmptyField = False -- field not empty
     | otherwise = f1 ^. entry /= f2 ^. entry -- entry different
-    --todo check if i did made it right with ignoring the same position
 
 -- | List of all to check entries for one entry
 listOfTestValid :: SudokuField -> Sudoku -> [SudokuField]

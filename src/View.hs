@@ -6,7 +6,7 @@ module View (startView) where
 
 import           Control.Lens.Getter
 import           Control.Monad                 (replicateM, void)
-import           Data.IORef                    (IORef, modifyIORef, newIORef,
+import           Data.IORef                    (modifyIORef, newIORef,
                                                 readIORef)
 import           GameField                     (Digit (EmptyField),
                                                 SudokuField (SudokuField),
@@ -64,6 +64,7 @@ setup sud w = void $
 
     -- title
     return w # set UI.title "sudoku"
+    -- css
     UI.addStyleSheet w "bootstrap.css"
     UI.addStyleSheet w "mdb.min.css"
 
@@ -88,10 +89,33 @@ setup sud w = void $
     let hoverColorBackground field@(SudokuField _ _ entry)
           | entry == EmptyField = "#D0FA58"
           | otherwise = boxColor field
+    let styleh1 =[("color", "#A9BCF5"),
+                 ("text-align", "center"),
+                 ("text-shadow", "2px 2px 50px"),
+                 ("box-shadow", "20px 20px 100px grey")]
+        styleNext = [ ("background-color", "#A9BCF5"),
+                        ("class", "btn btn-primary"),
+                        ("text-align", "center"),
+                        ("margin-left", "5%"),
+                        ("margin-right", "5%"),
+                        ("margin-top", "3%"),
+                        ("border-radius", "25px"),
+                        ("width", "90%")]
+        styleSolve = [ ("background-color", "#A9BCF5"),
+                        ("class", "btn btn-primary"),
+                        ("text-align", "center"),
+                        ("margin-left", "5%"),
+                        ("margin-right", "5%"),
+                        ("margin-top", "5px"),
+                        ("border-radius", "25px"),
+                        ("width", "90%")
+                      ]
+
+    -- counter of how often next was pressed
     my <- liftIO (readIORef count)
-    nextB <- UI.button #. (show my)
+    nextB <- UI.button #. show my
 
-
+    -- action of next to show the next sudoku based on IORef counter
     on UI.click nextB (\_ ->do
         ind <-liftIO $ readIORef count
         x <-liftIO $readInSudoku ind "sudoku17.txt"
@@ -104,6 +128,7 @@ setup sud w = void $
         -- scrollToBottom ( e)
 
         )
+    -- todo implement solveB
     solveB <- UI.button
     on UI.click solveB (\_ ->
         setup initSudokuField2 w
@@ -126,44 +151,25 @@ setup sud w = void $
 
 
 
-    -- todo: change it to playable
     -- sudoku build
     getBody w
       #+ [ UI.div #+ [UI.h1 # set UI.text "Sudoku 9000 - The Game"]
              # set
                UI.style
-               [ ("color", "#A9BCF5"),
-                 ("text-align", "center"),
-                 ("text-shadow", "2px 2px 50px"),
-                 ("box-shadow", "20px 20px 100px grey")
-               ],
+                styleh1
+               ,
            UI.div #+ createHTMLSudoku buttons # set UI.style [],
            UI.div #+ [element nextB
                     # set UI.text "next"
                     # set
                       UI.style
-                      [ ("background-color", "#A9BCF5"),
-                        ("class", "btn btn-primary"),
-                        ("text-align", "center"),
-                        ("margin-left", "5%"),
-                        ("margin-right", "5%"),
-                        ("margin-top", "3%"),
-                        ("border-radius", "25px"),
-                        ("width", "90%")]],
+                      styleNext],
            UI.div
              #+ [ element solveB
                     # set UI.text "solve"
                     # set
                       UI.style
-                      [ ("background-color", "#A9BCF5"),
-                        ("class", "btn btn-primary"),
-                        ("text-align", "center"),
-                        ("margin-left", "5%"),
-                        ("margin-right", "5%"),
-                        ("margin-top", "5px"),
-                        ("border-radius", "25px"),
-                        ("width", "90%")
-                      ]
+                      styleSolve
                 ]
          ]
 

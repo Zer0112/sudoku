@@ -31,6 +31,8 @@ Stellt die Typklassen für das Sudoku zur Verfügung.
 
 Ebenfalls stellt es einige simple Funktionen zur Verfügung.
 
+GameField ist mehr optimiert für einfache Handhabung, deswegen verwende ich ein anderes Format für den Solver.
+
 # Utility
 
 Stellt Konvertierung-Funktionen zur Verfügung.
@@ -43,6 +45,8 @@ Import und Export zu einer txt Datei.
 
 Verschieden Sudoku zum debuggen
 
+Die meisten der Funktionen sind für die GUI
+
 ## Solver
 
 Stellt eine Funktion zur Verfügung, welche ein Sudoku löst.
@@ -53,3 +57,14 @@ Stellt Hilfsfunktionen für den Solver zur Verfügung.
 
 - [] <-> Vektor Sudoku
 - findet leere Felder
+
+## Quellcode Dokumentation
+
+Der Quellcode ist mit Kommentaren versehen, die die Funktionsweise erklären.
+
+### Erklärung für >>> Kommentare
+
+`-- >>> completeSudokuValid (vecSudoku initSudokuField3) -- True`
+
+Kommentare wie diese sind dokumentierte Beispiele der Funktion.(man kann aus diesen auch leicht Test erstellen)
+In VSCode kann man mit der Haskell Extension diese auch ausführen.

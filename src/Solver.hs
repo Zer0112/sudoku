@@ -91,7 +91,8 @@ solutionsHelper st1 st2 []  = st1
 solutionsHelper [] sudStack2 emptyList@(e:es)  = solutionsHelper sudStack2 []  es
 solutionsHelper sudStack1@(s1:s1s) sudStack2 emptyList@(e:es)  = solutionsHelper s1s (expandChoices++sudStack2) emptyList
     where   choic = findChoices e s1
-            expandChoices =expandC s1 e choic
+            expandChoices | null choic = expandC s1 e choic
+                            | otherwise =expandC s1 e choic
 
 
 

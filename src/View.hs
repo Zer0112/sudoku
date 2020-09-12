@@ -22,8 +22,8 @@ import           Solver                      (solutionsAsSudokuField)
 import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
-import           Utility                     (fieldToChar2, initField,
-                                              initSudokuField6, readInSudoku)
+import           Utility                     (fieldToChar2, initSudokuField6,
+                                              readInSudoku)
 
 startView :: IO ()
 startView = main
@@ -137,8 +137,9 @@ setup sud i w = void $
     solveB <- UI.button
     on UI.click solveB (\_ ->do
         temp <- liftIO $ readIORef count
-        x <-liftIO $readInSudoku temp "sudoku17.txt"
+        -- x <-liftIO $readInSudoku temp "sudoku17.txt"
         let sol = solutionsAsSudokuField initSudokuField6
+        -- let sol = sud
         setup sol temp w
         )
 

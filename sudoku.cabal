@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib,GameField,Solver,GameState,Utility, View, Controll, SolverUtil
+      GameField,Solver,GameState,Utility, View, SolverUtil
   other-modules:
       Paths_sudoku
   hs-source-dirs:
@@ -43,7 +43,7 @@ executable sudoku-exe
       Paths_sudoku
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -W
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -W -O2
   build-depends:
       base >=4.7 && <5
     , sudoku   

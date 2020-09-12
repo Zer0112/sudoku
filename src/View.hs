@@ -5,23 +5,21 @@ module View (startView) where
 
 
 import           Control.Lens.Getter
-import           Control.Monad                 (replicateM, void)
-import           Data.IORef                    (modifyIORef, newIORef,
-                                                readIORef)
-import           GameField                     (Digit (EmptyField),
-                                                SudokuField (SudokuField),
-                                                entry, nrBox, nrOfElem)
-import           GHC.IO.Handle.Types           (Handle)
-import qualified Graphics.UI.Threepenny        as UI
+import           Control.Monad               (replicateM, void)
+import           Data.IORef                  (modifyIORef, newIORef, readIORef)
+import           GameField                   (Digit (EmptyField),
+                                              SudokuField (SudokuField), entry,
+                                              nrBox, nrOfElem)
+import           GHC.IO.Handle.Types         (Handle)
+import qualified Graphics.UI.Threepenny      as UI
 import           Graphics.UI.Threepenny.Core
-import           Graphics.UI.Threepenny.JQuery
-import           System.Info                   (os)
-import           System.Process                (ProcessHandle, createProcess,
-                                                shell)
-import           Utility                       (changeDigit, fieldToChar2,
-                                                initField, initSudokuField2,
-                                                readInSudoku)
-
+-- import           Graphics.UI.Threepenny.JQuery
+import           Solver
+import           System.Info                 (os)
+import           System.Process              (ProcessHandle, createProcess,
+                                              shell)
+import           Utility                     (fieldToChar2, initField,
+                                              readInSudoku)
 startView :: IO ()
 startView = main
 
@@ -128,11 +126,14 @@ setup sud i w = void $
         -- scrollToBottom ( e)
 
         )
-    -- todo implement solveB
+    -- todo fix it after the solveFuntion is fixed
+    -- currently deactivated because solve is not working properly
     solveB <- UI.button
     on UI.click solveB (\_ ->do
         temp <- liftIO $ readIORef count
-        setup initSudokuField2 temp w
+        x <-liftIO $readInSudoku temp "sudoku17.txt"
+        let s = solutions x
+        setup initField temp w
         )
 
 

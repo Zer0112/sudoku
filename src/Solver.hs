@@ -1,58 +1,84 @@
-{-# LANGUAGE BangPatterns #-}
 
-module Solver () where
+module Solver (solutions) where
 
-import           Control.Monad
-import           Control.Monad.ST
-import           Data.Bit
-import qualified Data.Vector                 as V
-import qualified Data.Vector.Unboxed         as U
-import qualified Data.Vector.Unboxed.Mutable as MU
-import           GameField
-import           SolverUtil
+import qualified Data.Vector as V
+import           GameField   (Digit (EmptyField, One), SudokuField, nrBox,
+                              nrOfElem)
+import           SolverUtil  (findEmpty, fsudoku, vecSudoku)
 import           Utility
 
--- >>> test
--- [[1,2,9,10,11,18,19,20],[0,2,9,10,11,18,19,20],[0,1,9,10,11,18,19,20],[2,4,11,12,13,20,21,22],[2,3,11,12,13,20,21,22],[2,3,4,11,12,13,20,21,22],[4,5,13,14,15,22,23,24],[4,5,6,13,14,15,22,23,24],[4,5,6,13,14,15,22,23,24],[6,7,8,15,16,17,24,25,26],[6,7,8,15,16,17,24,25,26],[6,7,8,15,16,17,24,25,26],[8,9,10,17,18,19,26,27,28],[8,9,10,17,18,19,26,27,28],[8,9,10,17,18,19,26,27,28],[10,11,12,19,20,21,28,29,30],[10,11,12,19,20,21,28,29,30],[10,11,12,19,20,21,28,29,30],[12,13,14,21,22,23,30,31,32],[12,13,14,21,22,23,30,31,32],[12,13,14,21,22,23,30,31,32],[14,15,16,23,24,25,32,33,34],[14,15,16,23,24,25,32,33,34],[14,15,16,24,25,32,33,34],[16,17,18,25,26,27,34,35,36],[16,17,18,26,27,34,35,36],[16,17,18,25,27,34,35,36],[18,19,20,28,29,36,37,38],[18,19,20,27,29,36,37,38],[18,19,20,27,28,36,37,38],[20,21,22,29,31,38,39,40],[20,21,22,29,30,38,39,40],[20,21,22,29,30,31,38,39,40],[22,23,24,31,32,40,41,42],[22,23,24,31,32,33,40,41,42],[22,23,24,31,32,33,40,41,42],[24,25,26,33,34,35,42,43,44],[24,25,26,33,34,35,42,43,44],[24,25,26,33,34,35,42,43,44],[26,27,28,35,36,37,44,45,46],[26,27,28,35,36,37,44,45,46],[26,27,28,35,36,37,44,45,46],[28,29,30,37,38,39,46,47,48],[28,29,30,37,38,39,46,47,48],[28,29,30,37,38,39,46,47,48],[30,31,32,39,40,41,48,49,50],[30,31,32,39,40,41,48,49,50],[30,31,32,39,40,41,48,49,50],[32,33,34,41,42,43,50,51,52],[32,33,34,41,42,43,50,51,52],[32,33,34,41,42,43,51,52],[34,35,36,43,44,45,52,53,54],[34,35,36,43,44,45,53,54],[34,35,36,43,44,45,52,54],[36,37,38,45,46,47,55,56],[36,37,38,45,46,47,54,56],[36,37,38,45,46,47,54,55],[38,39,40,47,48,49,56,58],[38,39,40,47,48,49,56,57],[38,39,40,47,48,49,56,57,58],[40,41,42,49,50,51,58,59],[40,41,42,49,50,51,58,59,60],[40,41,42,49,50,51,58,59,60],[42,43,44,51,52,53,60,61,62],[42,43,44,51,52,53,60,61,62],[42,43,44,51,52,53,60,61,62],[44,45,46,53,54,55,62,63,64],[44,45,46,53,54,55,62,63,64],[44,45,46,53,54,55,62,63,64],[46,47,48,55,56,57,64,65,66],[46,47,48,55,56,57,64,65,66],[46,47,48,55,56,57,64,65,66],[48,49,50,57,58,59,66,67,68],[48,49,50,57,58,59,66,67,68],[48,49,50,57,58,59,66,67,68],[50,51,52,59,60,61,68,69,70],[50,51,52,59,60,61,68,69,70],[50,51,52,59,60,61,68,69,70],[52,53,54,61,62,63,70,71,72],[52,53,54,61,62,63,70,71,72],[52,53,54,61,62,63,70,71,72]]
-test :: V.Vector (U.Vector Int)
-test =V.fromList $ map (\x->U.fromList $ boxVector x) [0..(nrOfElem^2-1)]
+-- WARNING: This seem to be really slow for harder sudokus do NOT use it for the 17sudokus
+-- it either is an infinite loop or i messed up the performance really bad
+-- >>> solutions initSudokuField6
+-- [[6,9,3,7,8,4,5,1,2,4,8,7,5,1,2,9,3,6,1,2,5,9,6,3,8,7,4,9,3,2,6,5,1,4,8,7,5,6,8,2,4,7,3,9,1,7,4,1,3,9,8,6,2,5,3,1,9,4,7,5,2,6,8,8,5,6,1,2,9,7,4,3,2,7,4,8,3,6,1,5,9]]
+
+solutions :: [SudokuField] -> [V.Vector Digit]
+solutions sud =solutionsHelper [field] [] empty
+    where       field = vecSudoku sud
+                empty = findEmpty $ fsudoku sud
 
 
--- todo fix this does not work on big index
--- >>> boxVector 79
--- [52,53,54,61,62,63,70,71,72]
-boxVector :: Int -> [Int]
-boxVector index =[st+x+y*nrOfElem |  y<-[0..nrBox-1],x <-[0..nrBox-1]]
-                        where    t  = (index `div` nrBox)
-                                 m = index `mod` nrBox
-                                 st =index-t-m
-                                 end = index-t+nrBox*nrOfElem
+-- utiltiy funtions / at moment not used
 
--- >>> rowVec 1
--- [0,1,2,3,4,5,6,7,8]
--- >>> rowVec 26
--- [21,22,23,24,25,26]
-rowVec :: Int -> [Int]
-rowVec index =  drop nrBox [st .. st+nrOfElem-1]
-                    where st=index - index `mod` nrOfElem
-
--- >>> colVec 12
--- [30,39,48,57,66,75]
--- >>> colVec 1
--- [28,37,46,55,64,73]
-
-colVec :: Int -> [Int]
-colVec index =drop nrBox [((index `mod` nrOfElem) + x*nrOfElem) | x <- [0.. (nrOfElem-1)]]
-
--- >>> findEmpty <$> fsudoku initSudokuField2
--- -- Just [0,9,18,27,36,45,54,63,72]
--- findEmpty :: V.Vector (V.Vector Bit) -> V.Vector Int
--- findEmpty sud = V.findIndices (\x ->x==emptyBitBasis) sud
+-- | shows if a whole sudoku is valid
+-- >>> completeSudokuValid (vecSudoku initSudokuField4)
+-- False
+-- >>> completeSudokuValid (vecSudoku initSudokuField3)
+-- True
+completeSudokuValid :: V.Vector Digit -> Bool
+completeSudokuValid sud =all (\x -> validEntryVec x sud) [0..nrOfElem^2-1]
 
 
+-- | tests if the entry at postion i is valid
+validEntryVec :: Int -> V.Vector Digit -> Bool
+validEntryVec i sud = all (fun i) (lookupList i)
+    where fun i x
+                    | sud V.! i == EmptyField = False
+                    | sud V.! x == EmptyField = True
+                    | otherwise = (sud V.! x) /= (sud V.! i)
+
+-- | tests if entry at postion i with Digit dig is valid
+validEntryVecDig :: Int ->Digit -> V.Vector Digit -> Bool
+validEntryVecDig i dig sud = all (fun i) (lookupList i)
+    where fun i x
+                    | sud V.! x == EmptyField = True
+                    | otherwise = (sud V.! x) /= dig
+
+
+-- help functions for solutions
+
+-- | calculates a list of indices which are in the same box/row/col as index
+-- >>> lookupList 4
+-- [0,1,2,3,5,6,7,8,12,13,14,21,22,23,31,40,49,58,67,76]
+lookupList :: Int -> [Int]
+lookupList index =[x | x <-[0..nrOfElem^2-1] ,(fun1 x && fun2 x)|| fun3 x || fun4 x,x/=index]
+        where   row a = a `div` nrOfElem
+                col a = a `mod` nrOfElem
+                fun1 x =(row index)`div`nrBox == (row x)`div`nrBox
+                fun2 x = (col index)`div`nrBox == (col x)`div`nrBox
+                fun3 x = row index == row x
+                fun4 x = col index == col x
+
+
+-- | finds the choices for an empty field
+-- >>> findChoices 0 (vecSudoku initSudokuField4)
+-- [6]
+findChoices :: Int -> V.Vector Digit -> [Digit]
+findChoices i sud =[ x | x <- enumFrom One , validEntryVecDig i x sud]
+
+
+expandC :: V.Vector Digit -> Int -> [Digit] -> [V.Vector Digit]
+expandC s i lst =map (\x ->s V.// [(i,x)]) lst
 
 
 
--- expandChoices :: V.Vector Bit->[V.Vector Bit]
-expandChoices x= undefined
+
+
+solutionsHelper st1 sudStack2 []  = st1
+solutionsHelper [] sudStack2 emptyList@(e:es)  = solutionsHelper sudStack2 []  es
+solutionsHelper sudStack1@(s1:s1s) sudStack2 emptyList@(e:es)  = solutionsHelper s1s (expandChoices++sudStack2) emptyList
+    where   choic = findChoices e s1
+            expandChoices =expandC s1 e choic
+
+
 

@@ -1,10 +1,15 @@
+-- | module for debugging and utility functions
 module Utility
   ( initField,
     readInSudokus,
     exportSudoku,
     fieldToChar2,
     initSudokuField2,
-    changeDigit,
+    initSudokuField3,
+    initSudokuField4,
+    initSudokuField5,
+    initSudokuField6,
+
     readInSudoku
   )
 where
@@ -13,7 +18,7 @@ import           Control.Lens ((^.))
 import           Data.Maybe   (isNothing)
 import           GameField    (Digit (..), Sudoku, SudokuField (SudokuField),
                                entry, nrOfElem)
-import           System.IO    (IOMode (ReadMode), hGetContents, withFile)
+
 
 -- | creates a dummy field for testing
 initField :: [SudokuField]
@@ -26,6 +31,17 @@ initField =
 -- | creates a dummy field for testing
 initSudokuField2 :: [SudokuField]
 initSudokuField2 = createSudokuField [enumFromTo EmptyField Eight | x <- [1 .. 9]]
+
+initSudokuField3 :: [SudokuField]
+initSudokuField3 =stringToSudoku "693784512487512936125963874932651487568247391741398625319475268856129743274836159"
+
+initSudokuField4 :: [SudokuField]
+initSudokuField4 =stringToSudoku "093784512487512936125963874932651487568247391741398625319475268856129743274836150"
+initSudokuField5 :: [SudokuField]
+initSudokuField5 =stringToSudoku "000000010400000000020000000000050407008000300001090000300400200050100000000806000"
+initSudokuField6 :: [SudokuField]
+initSudokuField6 =stringToSudoku "000784510087512936125963874932651487568247391741398625319475268856129743274836150"
+
 
 createSudokuField :: [[Digit]] -> [SudokuField]
 createSudokuField digList = concat [rowCreate nrRow dlist | (nrRow, dlist) <- zip [1 ..] digList]
@@ -93,9 +109,13 @@ sudokuToString :: Sudoku -> String
 sudokuToString = concatMap fieldToChar
 
 -- | mapping from chr to sudoku entry
-charToSud :: Char -> Maybe Digit
-charToSud ch
-  | ch == '0' = Just EmptyField
+charToSud :: Char  -> Maybe Digit
+charToSud ch = charToSudGeneral ch '0'
+
+-- | mapping from chr to sudoku entry
+charToSudGeneral :: Char ->Char -> Maybe Digit
+charToSudGeneral ch emptyFormat
+  | ch == emptyFormat = Just EmptyField
   | ch == '1' = Just One
   | ch == '2' = Just Two
   | ch == '3' = Just Three
@@ -107,6 +127,10 @@ charToSud ch
   | ch == '9' = Just Nine
   | otherwise = Nothing
 
+-- different export options
+-- at the moment only intern available
+-- seems everyone has their favorite format
+
 -- | creates a String from a Sudokufield with empty = 0
 fieldToChar :: SudokuField -> [Char]
 fieldToChar field = digitToChar (field ^. entry)
@@ -116,7 +140,7 @@ fieldToChar field = digitToChar (field ^. entry)
       | dig == EmptyField = "0"
       | otherwise = show dig
 
--- | creates a String from a Sudokufield with empty = " "
+-- | creates a String from a Sudokufield with empty = "-"
 fieldToChar2 :: SudokuField -> [Char]
 fieldToChar2 field = digitToChar (field ^. entry)
   where
@@ -125,10 +149,12 @@ fieldToChar2 field = digitToChar (field ^. entry)
       | dig == EmptyField = "-"
       | otherwise = show dig
 
-changeDigit :: SudokuField -> SudokuField
-changeDigit (SudokuField row col ent) = SudokuField row col (incDig ent)
+-- | creates a String from a Sudokufield with empty = " "
+fieldToChar3 :: SudokuField -> [Char]
+fieldToChar3 field = digitToChar (field ^. entry)
   where
-    incDig = succ1
-    succ1 dig
-      | dig == (maxBound :: Digit) = EmptyField
-      | otherwise = succ dig
+    digitToChar :: Digit -> [Char]
+    digitToChar dig
+      | dig == EmptyField = " "
+      | otherwise = show dig
+

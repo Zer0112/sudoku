@@ -18,7 +18,7 @@ import           Control.Lens (makeLenses, (^.))
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight | Nine deriving (Eq, Ord, Enum, Bounded)
 
 instance Show Digit where
-    show EmptyField = " "
+    show EmptyField = show 0
     show One        = show 1
     show Two        = show 2
     show Three      = show 3
@@ -67,9 +67,14 @@ instance Eq SudokuField where
     (==) (SudokuField col1 row1 _) (SudokuField col2 row2 _)
         | col1 == col2 && row1 == row2 = True
         | otherwise = False
+instance Ord SudokuField where
+    compare s1 s2 = compare (func s1) (func s2)  where func s = s^.col + (nrOfElem+1)*s^.row
 
--- TODO remove section after implemented in solver?
+
+
 -- legacy section that maybe useful for view in case of later expansion
+-- not really useful for the current state of the project, but showcase of len application
+-- mainly getters
 
 
 -- | gives True if both entries are in the same row

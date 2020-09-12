@@ -1,9 +1,8 @@
 module Main where
 
-import           Solver
-import           Utility
+
 import           View
+
+-- starts the sudoku game in the browser
 main :: IO ()
-main = do
-    print $ solutions initSudokuField5
---   startView
+main = startView

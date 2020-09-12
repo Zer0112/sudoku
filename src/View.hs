@@ -12,9 +12,13 @@ import           GameField                   (Digit (EmptyField),
                                               nrBox, nrOfElem)
 import           GHC.IO.Handle.Types         (Handle)
 import qualified Graphics.UI.Threepenny      as UI
-import           Graphics.UI.Threepenny.Core
+import           Graphics.UI.Threepenny.Core (Config (jsPort, jsStatic),
+                                              Element, MonadIO (liftIO), UI,
+                                              Window, defaultConfig, element,
+                                              getBody, on, set, startGUI, ( # ),
+                                              ( #+ ), ( #. ))
 -- import           Graphics.UI.Threepenny.JQuery
-import           Solver
+-- import           Solver
 import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
@@ -26,7 +30,7 @@ startView = main
 -- start a Threepenny server that listens on port 8023 (this is the default)
 main :: IO ()
 main = do
-  -- launchAppInBrowser 8023
+    launchAppInBrowser 8023
     startNew 1
 
 
@@ -43,7 +47,7 @@ setupDefaultIO sud=
 -- build a user interface whenver a browser connects to the server
 
 -- | convenience function that opens the 3penny UI in the default web browser
--- copied from one of the three penny examples
+-- copied from one of the three penny examples -https://github.com/thma/ThreepennyElectron#recap-what-weve-got-so-far
 launchAppInBrowser ::
   Int -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 launchAppInBrowser port = case os of
@@ -121,6 +125,7 @@ setup sud i w = void $
         setup x ind w
 
         -- for clearing the screen but i like it better otherwise
+        -- scrolling does not what i thought it would
         -- let g = getElementsByTagName w (show ind)
         -- e <- last <$> g
         -- scrollToBottom ( e)
@@ -132,7 +137,7 @@ setup sud i w = void $
     on UI.click solveB (\_ ->do
         temp <- liftIO $ readIORef count
         x <-liftIO $readInSudoku temp "sudoku17.txt"
-        let s = solutions x
+        --
         setup initField temp w
         )
 
@@ -251,7 +256,7 @@ sudClick labeledbuttons = sequence_
 -- | the abstract sudoku game in the view
 -- the values are stored in IOref and change on click to succ value mod (maxbound+emptyfield)
 callChange b r = do
-    liftIO $ modifyIORef r (\x ->((x+1) `mod` (nrOfElem+1) ))
+    liftIO $ modifyIORef r (\ x -> (x + 1) `mod` (nrOfElem + 1))
     r <- liftIO $ readIORef r
     element b # set UI.text (rep r)
         where rep r | r ==0 ="-"

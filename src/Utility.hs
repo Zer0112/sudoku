@@ -9,6 +9,7 @@ module Utility
     initSudokuField4,
     initSudokuField5,
     initSudokuField6,
+    stringToSudokuHelper,
 
     readInSudoku
   )

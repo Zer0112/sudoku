@@ -18,12 +18,13 @@ import           Graphics.UI.Threepenny.Core (Config (jsPort, jsStatic),
                                               getBody, on, set, startGUI, ( # ),
                                               ( #+ ), ( #. ))
 -- import           Graphics.UI.Threepenny.JQuery
--- import           Solver
+import           Solver                      (solutionsAsSudokuField)
 import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
 import           Utility                     (fieldToChar2, initField,
-                                              readInSudoku)
+                                              initSudokuField6, readInSudoku)
+
 startView :: IO ()
 startView = main
 
@@ -31,7 +32,7 @@ startView = main
 main :: IO ()
 main = do
     launchAppInBrowser 8023
-    startNew 1
+    setupDefaultIO initSudokuField6
 
 
 startNew :: Int -> IO ()
@@ -79,16 +80,16 @@ setup sud i w = void $
           | even ((a - 1) `div` nrBox + ((b - 1) `div` nrBox)) = "#A9BCF5"
           | otherwise = ""
     -- color empty/playable fields
-    let elmColor (SudokuField _ _ entry)
-          | entry == EmptyField = "magenta"
+    let elmColor f
+          | f^.entry == EmptyField = "magenta"
           | otherwise = "black"
     -- hoover color text
-    let hoverColorText (SudokuField _ _ entry)
-          | entry == EmptyField = "green"
+    let hoverColorText f
+          | f^.entry == EmptyField = "green"
           | otherwise = "black"
     -- highlight changeable fields
-    let hoverColorBackground field@(SudokuField _ _ entry)
-          | entry == EmptyField = "#D0FA58"
+    let hoverColorBackground field
+          | field^.entry == EmptyField = "#D0FA58"
           | otherwise = boxColor field
     -- style
     let styleh1 =[("color", "#A9BCF5"),
@@ -137,8 +138,8 @@ setup sud i w = void $
     on UI.click solveB (\_ ->do
         temp <- liftIO $ readIORef count
         x <-liftIO $readInSudoku temp "sudoku17.txt"
-        --
-        setup initField temp w
+        let sol = solutionsAsSudokuField initSudokuField6
+        setup sol temp w
         )
 
 
@@ -213,6 +214,7 @@ sudButtonGrid labeledbuttons elmColor boxColor=
       ]
 
 -- | highlight the field on hoover if it can be changed/empty
+sudButtonHoover :: [(Element, t, c)] -> (t -> String) -> (t -> String) -> UI ()
 sudButtonHoover labeledbuttons hoverColorText hoverColorBackground =
     sequence_
         [ on
@@ -244,6 +246,7 @@ sudButtonLeave labeledbuttons elmColor boxColor =
         | (b, t,_) <- labeledbuttons
       ]
 
+-- | makes the game playable
 sudClick labeledbuttons = sequence_
         [ on
             UI.click

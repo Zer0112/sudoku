@@ -1,9 +1,9 @@
-module SolverUtil (vecSudoku, findEmpty, fsudoku) where
+module SolverUtil (vecSudoku, findEmpty, fsudoku, convertVectoSud) where
 
 import qualified Data.Vector as V
 
 import           GameField
-
+import           Utility
 -- | convert sudoku into a list of digits
 -- >>> fsudoku initSudokuField2
 -- [0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8]
@@ -28,3 +28,5 @@ findEmpty sud = findEmpty' sud 0 [] where
                             | otherwise = findEmpty' xs (ind+1) lst
 
 
+convertVectoSud :: V.Vector Digit -> [SudokuField]
+convertVectoSud sudVec = stringToSudokuHelper (V.toList sudVec) 1

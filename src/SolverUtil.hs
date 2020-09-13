@@ -1,4 +1,4 @@
-module SolverUtil (vecSudoku, findEmpty, fsudoku, convertVectoSud) where
+module SolverUtil (vecSudoku, findEmpty, fsudoku, convertVectoSud, findEmptyInt) where
 
 import qualified Data.Vector as V
 
@@ -25,6 +25,12 @@ findEmpty sud = findEmpty' sud 0 [] where
     findEmpty' [] _ lst = reverse lst
     findEmpty' (x:xs) ind lst
                             | x == EmptyField = findEmpty' xs (ind+1) (ind:lst)
+                            | otherwise = findEmpty' xs (ind+1) lst
+findEmptyInt :: [Int] -> [Int]
+findEmptyInt sud = findEmpty' sud 0 [] where
+    findEmpty' [] _ lst = reverse lst
+    findEmpty' (x:xs) ind lst
+                            | x == 0 = findEmpty' xs (ind+1) (ind:lst)
                             | otherwise = findEmpty' xs (ind+1) lst
 
 

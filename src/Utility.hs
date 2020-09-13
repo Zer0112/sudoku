@@ -9,6 +9,7 @@ module Utility
     initSudokuField4,
     initSudokuField5,
     initSudokuField6,
+    initSudokuField7,
     stringToSudokuHelper,
 
     readInSudoku
@@ -41,7 +42,9 @@ initSudokuField4 =stringToSudoku "0937845124875129361259638749326514875682473917
 initSudokuField5 :: [SudokuField]
 initSudokuField5 =stringToSudoku "000000010400000000020000000000050407008000300001090000300400200050100000000806000"
 initSudokuField6 :: [SudokuField]
-initSudokuField6 =stringToSudoku "000784510087512936125963874932651487568247391741398625319475268856129743274836150"
+initSudokuField6 =stringToSudoku "000000510087512936125000804932600480568247300041398025319470268856129700074836150"
+initSudokuField7 :: [SudokuField]
+initSudokuField7 =stringToSudoku "000000500087010006125000804032600480500247300040398000009070200856000700074030050"
 
 
 createSudokuField :: [[Digit]] -> [SudokuField]

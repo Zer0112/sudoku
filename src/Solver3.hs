@@ -18,6 +18,10 @@ vecSudIn sud= fst $ vecSudIntEmpty sud
 vecSudEmpty :: [SudokuField] -> [Int]
 vecSudEmpty sud= snd $ vecSudIntEmpty sud
 
+solve sud=head $ allSolve [[sud1]] emptyList
+    where   s=vecSudIntEmpty sud
+            sud1 = fst s
+            emptyList = snd s
 
 
 allSolve sud [] =sud
@@ -27,11 +31,13 @@ allSolve sud emptyList@(e:es) = allSolve sudN es
 fillAll sud emptyList =new
     where new = map (\ x ->fillOne x emptyList) sud
 
-fillOne s emptyList@(e:es) =fill s e choice []
+fillOne s emptyList@(e:es)
+    |null (findChoicesInt e s) = []
+    |otherwise = fill s e choice []
     where choice  = findChoicesInt e s
 
 
-findChoicesInt i sud = [ x | x <-[1..9]  , validEntryVecDigInt i x sud]
+findChoicesInt i sud = filter (\x ->validEntryVecDigInt i x sud) [1..nrOfElem]
 
 validEntryVecDigInt :: Int ->Int -> V.Vector Int -> Bool
 validEntryVecDigInt i dig sud = all (fun i) (lookupList i)
@@ -53,3 +59,5 @@ test3=fillAll [fst test1] (snd test1)
 test4=allSolve [[fst test1]] (snd test1)
 
 test1 = vecSudIntEmpty initSudokuField7
+
+test5 = solve initSudokuField8

@@ -12,7 +12,7 @@ module GameField
     )
 where
 
-import           Control.Lens (makeLenses, (^.))
+import           Control.Lens (Lens', makeLenses, (^.))
 
 -- | type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight | Nine deriving (Eq, Ord, Enum, Bounded)
@@ -58,6 +58,15 @@ data SudokuField = SudokuField
     }
 
 makeLenses ''SudokuField
+-- just proof of concept to define own Lens
+lCol :: Lens' SudokuField Int
+lCol f (SudokuField c r e) = (\x->SudokuField x r e) <$> (f c)
+
+lRol :: Lens' SudokuField Int
+lRol f (SudokuField c r e) = (\x->SudokuField c x e) <$> (f r)
+
+lEntry :: Lens' SudokuField Digit
+lEntry f (SudokuField c r e) = (\x->SudokuField c r x) <$> (f e)
 
 instance Show SudokuField where
     show field =

@@ -1,6 +1,6 @@
 # Sudoku
 
-![Example](resources\Screenshot_8.png)
+![Example](resources/Screenshot_8.png)
 
 ## A simple implementation of Sudoku
 

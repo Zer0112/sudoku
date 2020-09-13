@@ -126,3 +126,5 @@ validEntry field sudoku = and filterEntry
 -- | checks the whole sudoku
 validAll :: Sudoku -> Bool
 validAll sudoku = all (`validEntry` sudoku) sudoku
+
+

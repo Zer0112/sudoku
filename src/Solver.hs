@@ -1,5 +1,5 @@
 
-module Solver (solutions,solutionsAsSudokuField,findChoices) where
+module Solver (solutions,solutionsAsSudokuField,findChoices,lookupList) where
 
 import qualified Data.Vector as V
 import           GameField   (Digit (EmptyField, One), SudokuField, nrBox,

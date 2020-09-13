@@ -18,7 +18,6 @@ vecSudIn sud= fst $ vecSudIntEmpty sud
 vecSudEmpty :: [SudokuField] -> [Int]
 vecSudEmpty sud= snd $ vecSudIntEmpty sud
 
-test1 = vecSudIntEmpty initSudokuField5
 
 
 allSolve sud [] =sud
@@ -52,3 +51,5 @@ test2= fillOne (fst test1) (snd test1)
 --
 test3=fillAll [fst test1] (snd test1)
 test4=allSolve [[fst test1]] (snd test1)
+
+test1 = vecSudIntEmpty initSudokuField7

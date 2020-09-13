@@ -23,7 +23,7 @@ import           System.Info                 (os)
 import           System.Process              (ProcessHandle, createProcess,
                                               shell)
 import           Utility                     (fieldToChar2, initSudokuField6,
-                                              readInSudoku)
+                                              initSudokuField7, readInSudoku)
 
 startView :: IO ()
 startView = main
@@ -32,7 +32,7 @@ startView = main
 main :: IO ()
 main = do
     launchAppInBrowser 8023
-    setupDefaultIO initSudokuField6
+    setupDefaultIO initSudokuField7
 
 
 startNew :: Int -> IO ()

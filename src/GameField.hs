@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes      #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module GameField
@@ -12,7 +13,7 @@ module GameField
     )
 where
 
-import           Control.Lens (Lens', makeLenses, (^.))
+import           Control.Lens (Lens', getConst, makeLenses, (^.))
 
 -- | type for the digit in the sudoku game
 data Digit = EmptyField | One | Two | Three | Four | Five | Six | Seven | Eight | Nine deriving (Eq, Ord, Enum, Bounded)
@@ -38,12 +39,12 @@ newtype DigitFelxible = DigitFlex Integer deriving (Show, Eq, Ord)
 -- >>> nrOfElem == fromEnum (maxBound :: Digit)
 -- True
 nrOfElem :: Int
-nrOfElem = 9
+nrOfElem = 4
 
 -- | nr of boxes in one row/col
 -- for now it is just fixed to 3 but i may extend it later
 nrBox :: Int
-nrBox = 3
+nrBox = 2
 
 -- | data type to represent the sudoku game as whole
 -- It is a list of all Sudokufields
@@ -58,6 +59,10 @@ data SudokuField = SudokuField
     }
 
 makeLenses ''SudokuField
+
+
+
+
 -- just proof of concept to define own Lens
 lCol :: Lens' SudokuField Int
 lCol f (SudokuField c r e) = (\x->SudokuField x r e) <$> (f c)
@@ -67,6 +72,29 @@ lRol f (SudokuField c r e) = (\x->SudokuField c x e) <$> (f r)
 
 lEntry :: Lens' SudokuField Digit
 lEntry f (SudokuField c r e) = (\x->SudokuField c r x) <$> (f e)
+
+view1 lens s = getConst $ lens s
+
+set1 lens s = over1 lens (const s)
+
+over1 l m = runIdentity . l (Identity . m)
+
+newtype Identity a = Identity {runIdentity::a}
+
+instance Functor Identity where
+    fmap f (Identity a) = Identity (f a)
+
+instance Applicative Identity where
+    pure = Identity
+    Identity a <*> Identity b =Identity $ a b
+
+instance Monad Identity where
+    Identity x >>=m = m x
+
+
+
+
+
 
 instance Show SudokuField where
     show field =
@@ -78,7 +106,6 @@ instance Eq SudokuField where
         | otherwise = False
 instance Ord SudokuField where
     compare s1 s2 = compare (func s1) (func s2)  where func s = s^.col + (nrOfElem+1)*s^.row
-
 
 
 -- legacy section that maybe useful for view in case of later expansion
@@ -135,5 +162,4 @@ validEntry field sudoku = and filterEntry
 -- | checks the whole sudoku
 validAll :: Sudoku -> Bool
 validAll sudoku = all (`validEntry` sudoku) sudoku
-
 

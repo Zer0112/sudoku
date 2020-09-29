@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Solver3 () where
-import           Control.Lens
+import           Control.Lens        ()
 import qualified Data.Vector.Unboxed as V
-import           GameField
-import           Solver
-import           SolverUtil
-import           Utility
+import           GameField           (SudokuField (SudokuField), nrOfElem)
+import           Solver              (lookupList)
+import           SolverUtil          (findEmptyInt)
+import           Utility             (initSudokuField7, initSudokuField8)
 
 vecSudIntEmpty :: [SudokuField] -> (V.Vector Int,[Int])
 vecSudIntEmpty sud=(V.fromList $ sudD, findEmptyInt sudD)
@@ -18,12 +18,14 @@ vecSudIn sud= fst $ vecSudIntEmpty sud
 vecSudEmpty :: [SudokuField] -> [Int]
 vecSudEmpty sud= snd $ vecSudIntEmpty sud
 
+solve :: [SudokuField] -> [V.Vector Int]
 solve sud=head $ allSolve [[sud1]] emptyList
     where   s=vecSudIntEmpty sud
             sud1 = fst s
             emptyList = snd s
 
 
+allSolve :: [[V.Vector Int]] -> [Int] -> [[V.Vector Int]]
 allSolve sud [] =sud
 allSolve sud emptyList@(e:es) = allSolve sudN es
     where sudN =concat $ map (\x -> fillAll x emptyList) sud
@@ -37,6 +39,7 @@ fillOne s emptyList@(e:es)
     where choice  = findChoicesInt e s
 
 
+findChoicesInt :: Int -> V.Vector Int -> [Int]
 findChoicesInt i sud = filter (\x ->validEntryVecDigInt i x sud) [1..nrOfElem]
 
 validEntryVecDigInt :: Int ->Int -> V.Vector Int -> Bool

@@ -4,10 +4,10 @@ module Solver2 () where
 
 
 import qualified Data.Vector as V
-import           GameField
-import           Solver
-import           SolverUtil
-import           Utility
+import           GameField   (Digit, SudokuField)
+import           Solver      (findChoices)
+import           SolverUtil  (findEmpty, fsudoku, vecSudoku)
+import           Utility     (initSudokuField5, initSudokuField6)
 
 
 zippedChoices :: [SudokuField] -> [(Int, [Digit])]

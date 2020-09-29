@@ -4,7 +4,7 @@
 module View (startView) where
 
 
-import           Control.Lens.Getter
+import           Control.Lens.Getter         ((^.))
 import           Control.Monad               (replicateM, void)
 import           Data.IORef                  (modifyIORef, newIORef, readIORef)
 import           GameField                   (Digit (EmptyField),
@@ -137,9 +137,8 @@ setup sud i w = void $
     solveB <- UI.button
     on UI.click solveB (\_ ->do
         temp <- liftIO $ readIORef count
-        -- x <-liftIO $readInSudoku temp "sudoku17.txt"
         let sol = solutionsAsSudokuField initSudokuField6
-        -- let sol = sud
+        -- let sol =solutionsAsSudokuField sud
         setup sol temp w
         )
 
